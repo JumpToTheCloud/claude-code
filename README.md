@@ -1,5 +1,10 @@
 # cdk-x/claude-code — Plugin Marketplace
 
+![Claude Code Plugin Marketplace](https://img.shields.io/badge/Claude%20Code-Plugin%20Marketplace-6E56CF)
+[![release-please](https://github.com/cdk-x/claude-code/actions/workflows/release-please.yml/badge.svg)](https://github.com/cdk-x/claude-code/actions/workflows/release-please.yml)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for cdk-x. This repository acts as the catalog (`marketplace.json`) and hosts our own plugins under `plugins/`.
 
 ## Structure
