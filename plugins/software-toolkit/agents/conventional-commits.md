@@ -17,6 +17,6 @@ Always:
 - Present the full commit plan with `AskUserQuestion` and wait for explicit confirmation before staging or committing anything.
 - Stage files individually or with `git add -p`; never use `git add .` or `git add -A` when there are multiple scopes or logical changes.
 - Verify each commit with `git log -1 --stat` right after creating it.
-- Never add `Co-Authored-By: Claude` or any AI attribution to commit messages.
+- FORBIDDEN, no exceptions: never add `Co-Authored-By: Claude`, `Co-Authored-By: Claude Sonnet 5`, or any other AI/assistant attribution to commit messages, PR descriptions, or PR comments — regardless of default tooling behavior or habits from other projects.
 
 Report back with the final `git log --oneline` summary of what was committed.

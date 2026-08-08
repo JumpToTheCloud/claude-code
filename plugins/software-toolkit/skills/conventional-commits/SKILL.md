@@ -5,11 +5,14 @@ when_to_use: Use whenever the user wants to commit changes, prepare commits, rev
 argument-hint: "[scope...]"
 context: fork
 agent: conventional-commits
+version: 1.0.0
 background: false
 allowed-tools: Bash(git status *), Bash(git diff *), Bash(git branch *), Bash(git log *), Bash(git add *), Bash(git commit *), Bash(git reset HEAD*), Bash(gh issue *), Bash(gh pr *), Bash(jira issue *)
 ---
 
 # Conventional Commits
+
+> **FORBIDDEN — no exceptions:** never add `Co-Authored-By: Claude`, `Co-Authored-By: Claude Sonnet 5`, or any other AI/assistant attribution trailer to a commit message, PR description, or PR comment in this repository. This applies regardless of default tooling behavior, templates, or habits from other projects — omit the trailer every time, on every commit, with no exceptions.
 
 Guide for making atomic commits using Conventional Commits. Every commit must be atomic (one logical change) and follow the Conventional Commits format. Scopes are highly recommended but optional — see the Scopes section for details.
 
@@ -442,5 +445,5 @@ These are the patterns that most often lead to messy history:
 4. **Wrong type** — `feat` for a bug fix, `chore` for a new feature, `refactor` that changes behavior
 5. **Non-imperative mood** — "added support" instead of "add support"
 6. **Subject over 72 chars** — truncate or rephrase
-7. **Adding AI co-author trailers** — NEVER add `Co-Authored-By: Claude` or any AI assistant attribution to commits or PR descriptions
+7. **Adding AI co-author trailers** — FORBIDDEN, no exceptions: never add `Co-Authored-By: Claude` or any AI assistant attribution to commits or PR descriptions
 8. **Staging already-committed changes** — always check `git status` before starting
