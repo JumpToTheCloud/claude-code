@@ -12,7 +12,6 @@
       "name": "software-toolkit",
       "source": "./plugins/software-toolkit",
       "description": "Software engineering practices and workflows for Claude Code, starting with Conventional Commits",
-      "version": "0.0.0",
       "author": {
         "name": "cdk-x"
       },
