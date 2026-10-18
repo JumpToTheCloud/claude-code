@@ -1,0 +1,16 @@
+{
+  "description": "Auto-approve invoking this plugin's own skills — each skill already scopes its own tool access via allowed-tools/permissionMode, so re-asking permission just to invoke the skill is redundant friction.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/approve-own-skills.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
