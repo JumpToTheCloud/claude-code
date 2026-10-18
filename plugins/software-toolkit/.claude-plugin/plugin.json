@@ -1,6 +1,6 @@
 {
   "name": "software-toolkit",
-  "description": "Software engineering practices and workflows for Claude Code, starting with Conventional Commits",
+  "description": "Software engineering practices and workflows for Claude Code: Conventional Commits, and a GitHub-only PRD -> plan -> analyze -> issues discovery flow",
   "version": "1.0.0",
   "author": {
     "name": "cdk-x",
