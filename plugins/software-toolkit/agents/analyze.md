@@ -17,9 +17,9 @@ than assuming prior context. If the issue has no plan comment (look for `## 📐
 stop and tell the user to run `/plan` first — do not analyze a spec on its own.
 
 Always:
-- Load the constitution (`AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md` —
-  first one found) for Pass D (constitution alignment); if none exist, skip that pass and say
-  so in the report.
+- Load the constitution (`CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or
+  `ARCHITECTURE.md` — first one found) for Pass D (constitution alignment); if none exist, skip
+  that pass and say so in the report.
 - Cap findings at 50 across all 6 passes. Constitution violations are always CRITICAL — no
   exceptions, no softening.
 - Do not invent issues — only report what is verifiably present in the spec and plan.

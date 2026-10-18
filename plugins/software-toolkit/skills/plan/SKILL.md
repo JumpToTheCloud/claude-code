@@ -41,9 +41,11 @@ ended with the user choosing not to explore. Look for:
 - Which packages and modules the feature touches
 - Existing patterns to follow or extend (don't invent when convention exists)
 - Relevant data structures and interfaces
-- A project constitution — `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md`,
-  first one found in that order (written by the `constitution` skill, if it's been run on this
-  repo) — note architecture rules and coding conventions to validate against later
+- A project constitution — `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or
+  `ARCHITECTURE.md`, first one found in that order (none of these are written by this toolkit
+  today — `init-repo` only writes repo identity, not rules — so this is only relevant for repos
+  that already have one by other means) — note architecture rules and coding conventions to
+  validate against later
 
 Delegate this exploration to the `Explore` agent when the codebase is large or the impact area
 is unclear, to keep this skill's own context focused on the spec and the plan being drafted.

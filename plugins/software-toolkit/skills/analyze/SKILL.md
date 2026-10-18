@@ -26,9 +26,10 @@ fetch and publish commands. If the plan is missing, stop and ask the user to run
 
 ## Step 1 — Load the constitution
 
-Look for `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md`, in that order —
-first one found is the project's constitution for Pass D (constitution alignment), same
-resolution order `plan` uses. If none exist, skip Pass D and note its absence in the report.
+Look for `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md`,
+in that order — first one found is the project's constitution for Pass D (constitution
+alignment), same resolution order `plan` uses. If none exist, skip Pass D and note its absence
+in the report.
 
 ---
 
