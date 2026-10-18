@@ -13,7 +13,7 @@ the *implementation* issues go in. Resolve the current repo's `nameWithOwner` wi
 Resolve the Project config (`GitHub Project` / `GitHub Project Owner` in `AGENTS.md`/
 `CLAUDE.md`) the same way `prd-to-issues/references/github.md` describes — both skills share
 the same model, documented in full in that file. There is no central Component → repo table:
-each repo self-declares its Component via `/constitution`, and `prd-to-issues` discovers it by
+each repo self-declares its Component via `/init-repo`, and `prd-to-issues` discovers it by
 searching the org when it's time to create implementation issues — `/prd` itself only needs the
 Project's `Component` field options (to show the user valid names), not the repo mapping. See
 `../../prd-to-issues/references/configuration.md` for the one-time setup checklist if any of

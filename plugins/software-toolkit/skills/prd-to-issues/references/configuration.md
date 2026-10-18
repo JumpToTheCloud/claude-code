@@ -15,11 +15,11 @@ needs the following already set up — none of it is something the skill creates
    - `GitHub Project` — the Project's number or title.
    - `GitHub Project Owner` — the Project's owner login (user or org); also used as the org to
      search when discovering a Component's repo (see below).
-4. **Every repo that can receive implementation issues has run `/constitution`**, which writes
+4. **Every repo that can receive implementation issues has run `/init-repo`**, which writes
    its self-declaration as the exact line `GitHub Component: <name>` in its own `AGENTS.md`/
    `CLAUDE.md`. There is **no central Component → repo table** — `prd-to-issues` discovers the
    right repo by searching the org for this declaration (`gh search code`). A repo that never
-   ran `/constitution` can't be found, and a Component declared in more than one repo is a
+   ran `/init-repo` can't be found, and a Component declared in more than one repo is a
    conflict `prd-to-issues` will refuse to guess through.
 5. **A `gh` token with the `project` scope** — `gh auth status` shows it under "Token scopes";
    if missing, the user runs `gh auth refresh -s project` themselves (interactive, not something

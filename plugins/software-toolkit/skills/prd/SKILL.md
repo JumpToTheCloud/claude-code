@@ -34,7 +34,7 @@ Collect:
   spans more than one repo, tell the user this should be split into separate PRDs rather than
   picking one Component arbitrarily. If the Component the user names isn't one of the Project's
   options, warn them (same as Step 0) but let them proceed if they insist — the repo still needs
-  to have run `/constitution` with that exact name for `prd-to-issues` to find it later.
+  to have run `/init-repo` with that exact name for `prd-to-issues` to find it later.
 
 ---
 

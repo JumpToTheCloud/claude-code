@@ -49,7 +49,7 @@ option to a shared Project is a board-admin action; don't create it yourself.
 ## Resolving the Component → repo mapping
 
 There is no central table to maintain — each repo self-declares its Component in its own
-`AGENTS.md`/`CLAUDE.md` (written by the `constitution` skill), as the exact line
+`AGENTS.md`/`CLAUDE.md` (written by the `init-repo` skill), as the exact line
 `GitHub Component: <name>`. Discover the repo by searching for that declaration across the org:
 
 First, find the PRD's Component by locating its item in the Project:
@@ -80,7 +80,7 @@ config key needed.
   If this fails (deleted, renamed since the search index last updated, no access), stop and ask
   — don't discover it mid-way through creating issues.
 - **Zero matches** → stop and tell the user: *"No repo in `<org>` self-declares Component
-  `<component>`. Run `/constitution` on the intended repo, or check its `AGENTS.md` for a typo."*
+  `<component>`. Run `/init-repo` on the intended repo, or check its `AGENTS.md` for a typo."*
 - **More than one match** → stop and tell the user which repos conflict: *"Both `<repo1>` and
   `<repo2>` self-declare Component `<component>` — fix the duplicate declaration before
   continuing."* Never pick one arbitrarily.
