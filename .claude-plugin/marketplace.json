@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "name": "cdk-x-claude-code-marketplace",
+  "name": "jumptothecloud-code-marketplace",
   "owner": {
     "name": "cdk-x",
     "email": "team@cdk-x.com",
