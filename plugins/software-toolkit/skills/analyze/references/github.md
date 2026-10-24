@@ -7,7 +7,9 @@ gh issue view <number> --json title,body,comments
 ```
 
 - **Spec** = the issue body (written by `/prd`)
-- **Plan** = the most recent comment whose body contains `## 📐 Technical Plan` (written by `/plan`)
+- **Plan** = the most recent comment whose body contains a `## Technical Plan` heading, with or
+  without a leading emoji (written by `/plan` — match on the text "Technical Plan" after the
+  `##`, not an exact emoji, since the plan template itself has no emoji)
 
 If no plan comment is found, stop and tell the user: *"No technical plan found on this issue. Run `/plan` first."*
 

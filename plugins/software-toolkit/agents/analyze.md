@@ -13,8 +13,9 @@ loaded into your context.
 
 You run in an isolated context with no access to prior conversation turns, so re-derive
 everything from the issue itself (`gh issue view <number> --json title,body,comments`) rather
-than assuming prior context. If the issue has no plan comment (look for `## 📐 Technical Plan`),
-stop and tell the user to run `/plan` first — do not analyze a spec on its own.
+than assuming prior context. If the issue has no plan comment (look for a `## Technical Plan`
+heading in a comment, with or without a leading emoji), stop and tell the user to run `/plan`
+first — do not analyze a spec on its own.
 
 Always:
 - Load the constitution (`CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or
