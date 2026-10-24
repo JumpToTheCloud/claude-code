@@ -123,7 +123,7 @@ added to the Project at creation time).
 
 ---
 
-## Step 3 — Set `Component` and `Phase` on the Project item
+## Step 3 — Set `Component`, `Phase`, and `Status` on the Project item
 
 ```bash
 gh project item-edit --project-id <project-node-id> --id <item-id> \
@@ -131,14 +131,17 @@ gh project item-edit --project-id <project-node-id> --id <item-id> \
 
 gh project item-edit --project-id <project-node-id> --id <item-id> \
   --field-id <phase-field-id> --single-select-option-id <discovery-option-id>
+
+gh project item-edit --project-id <project-node-id> --id <item-id> \
+  --field-id <status-field-id> --single-select-option-id <backlog-option-id>
 ```
 
-`Component` is the value chosen in `/prd` Step 1. `Phase` is always set to `Discovery` at
-creation.
+`Component` is the value chosen in `/prd` Step 1. `Phase` is always set to `Discovery`, and
+`Status` to `Backlog`, at creation.
 
 ---
 
 ## Report
 
-Tell the user the issue number, URL, Component, and Phase (`Discovery`) so they can share or
-reference it.
+Tell the user the issue number, URL, Component, Phase (`Discovery`), and Status (`Backlog`) so
+they can share or reference it.

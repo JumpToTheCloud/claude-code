@@ -18,6 +18,12 @@ heading in a comment, with or without a leading emoji), stop and tell the user t
 first — do not analyze a spec on its own.
 
 Always:
+- If a GitHub Project is configured, mark the PRD's `Status` as `Analysis` at the start. At the
+  end, advance it to `Ready for Breakdown` only if this run found zero findings at any severity
+  — not just zero critical. The verdict (ready/not ready for `/prd-to-issues`) is about critical
+  issues only and can say "ready" while `Status` stays at `Analysis` because lesser findings
+  remain open; that's intentional. This is best-effort tracking — a missing Project or Status
+  option is a warning, never a reason to stop.
 - Load the constitution (`CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or
   `ARCHITECTURE.md` — first one found) for Pass D (constitution alignment); if none exist, skip
   that pass and say so in the report.

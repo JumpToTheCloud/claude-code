@@ -33,6 +33,18 @@ are.
 
 ---
 
+## Step 0c — Mark the PRD as `Planning` (best-effort)
+
+If `GitHub Project`/`GitHub Project Owner` are configured in `AGENTS.md`/`CLAUDE.md`, find the
+PRD's Project item (see `prd-to-issues/references/github.md` — "Finding a Project item for an
+existing issue") and set its `Status` to `Planning`.
+
+This is tracking, not a requirement: if the Project isn't configured, or the `Status` field is
+missing the `Planning` option, warn once (e.g. "couldn't mark Status=Planning: <reason>") and
+move on — never block producing the plan over this.
+
+---
+
 ## Step 1 — Explore the codebase
 
 Understand the impact area before drafting — a plan written without reading the code often
@@ -103,3 +115,4 @@ and this plan before breaking the work into issues with `/prd-to-issues`.
 - **No open questions in the final draft**: unresolved items become named assumptions, never dangling questions.
 - **Omit template sections that don't apply**: a plan without data model changes doesn't need a Data Model section. Shorter plans are easier to act on.
 - **Don't re-specify what existing skills already own**: if the project has skills for conventional commits, testing, or linting, reference them by name — don't reproduce their rules in the plan.
+- **Status tracking is best-effort**: missing Project config or a missing `Planning` option is a warning, never a reason to stop producing the plan.

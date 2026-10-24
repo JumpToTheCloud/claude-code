@@ -24,6 +24,17 @@ fetch and publish commands. If the plan is missing, stop and ask the user to run
 
 ---
 
+## Step 0b — Mark the PRD as `Analysis` (best-effort)
+
+If `GitHub Project`/`GitHub Project Owner` are configured in `AGENTS.md`/`CLAUDE.md`, find this
+issue's Project item (see `prd-to-issues/references/github.md` — "Finding a Project item for an
+existing issue") and set its `Status` to `Analysis`.
+
+This is tracking, not a requirement: if the Project isn't configured, or the `Status` field is
+missing the `Analysis` option, warn once and move on — never block the analysis over this.
+
+---
+
 ## Step 1 — Load the constitution
 
 Look for `CONSTITUTION.md`, `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, or `ARCHITECTURE.md`,
@@ -112,6 +123,16 @@ Incorporate feedback (back to Step 2) until the user approves. If the user wants
 Follow the publish instructions in `references/github.md` — post the analysis as a comment on
 the same issue.
 
+Advance the PRD's `Status` from `Analysis` to `Ready for Breakdown` only if this run found
+**zero findings at any severity** — not just zero critical. The verdict text is still about
+critical issues only (that's what actually blocks `/prd-to-issues`), but `Status` is a stricter,
+separate signal: any open HIGH/MEDIUM/LOW finding keeps it at `Analysis`, even when the verdict
+itself says "Ready". The user can still proceed to `/prd-to-issues` with the verdict's blessing
+while `Status` stays at `Analysis` — that's intentional, `Status` tracks "fully clean", not
+"unblocked". (Same best-effort rule as Step 0b for the field/option update itself — warn and
+continue if the Status option is missing.) Re-running `/analyze` after fixing the remaining
+findings naturally re-evaluates and advances it once none are left.
+
 ---
 
 ## Step 7 — Report
@@ -127,3 +148,4 @@ Tell the user where the analysis was posted. If no critical issues were found, c
 - If the user asks to fix a finding, help them update the relevant artifact first, then re-run the affected passes.
 - Constitution violations (`CLAUDE.md` MUST rules) are always CRITICAL — no exceptions.
 - Do not invent issues — only report what is verifiably present in the artifacts.
+- **Status tracking is best-effort**: missing Project config or a missing Status option is a warning, never a reason to stop the analysis.

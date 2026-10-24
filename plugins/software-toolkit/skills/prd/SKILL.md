@@ -1,6 +1,6 @@
 ---
 name: prd
-description: Convert a feature idea or description into a Product Requirements Document (PRD) and publish it as a GitHub issue with the native "PRD" Issue Type, added to the team's shared GitHub Project with its Component and Phase fields set. Use whenever the user wants to write a PRD, spec, or specification, formalize a feature, define requirements, create user stories, or document what to build. Always use this skill when the user mentions "prd", "spec", "specification", "requirements", "user stories", "acceptance criteria", or wants to turn any feature idea into a structured document.
+description: Convert a feature idea or description into a Product Requirements Document (PRD) and publish it as a GitHub issue with the native "PRD" Issue Type, added to the team's shared GitHub Project with its Component, Phase, and Status fields set. Use whenever the user wants to write a PRD, spec, or specification, formalize a feature, define requirements, create user stories, or document what to build. Always use this skill when the user mentions "prd", "spec", "specification", "requirements", "user stories", "acceptance criteria", or wants to turn any feature idea into a structured document.
 ---
 
 # /prd — Product Requirements Document
@@ -14,7 +14,10 @@ Read `references/github.md` ("Step 0 — Resolve everything before drafting") an
 **before** asking the user anything in Step 1: resolve the "PRD" Issue Type, the shared Project,
 the token's `project` scope, and the `Component`/`Phase` field IDs. If anything is missing, stop
 and tell the user immediately — don't let them write and approve a whole PRD only to discover at
-the end that the Project or Issue Type isn't set up.
+the end that the Project or Issue Type isn't set up. Also resolve the `Status` field's
+`Backlog` option while you're there — unlike Component/Phase, treat a missing `Backlog` option
+as best-effort (warn, don't block): it's a default GitHub Projects value, so its absence is
+unusual, but losing it shouldn't stop a PRD from being created.
 
 ---
 
@@ -81,13 +84,15 @@ Follow `references/github.md` Steps 1–3:
    confirmation — approving the PRD's content in Steps 6–7 is not the same as approving where
    it gets created.
 2. Create the issue with the "PRD" Issue Type, directly inside the Project.
-3. Set `Component` (from Step 1) and `Phase = Discovery` on the new Project item.
+3. Set `Component` (from Step 1), `Phase = Discovery`, and `Status = Backlog` on the new
+   Project item.
 
 If related issues were found in Step 2, add cross-references in the issue body.
 
 ## Step 9 — Report
 
-Tell the user the issue number, URL, Component, and Phase, so they can share or reference it.
+Tell the user the issue number, URL, Component, Phase, and Status, so they can share or
+reference it.
 Suggest running `/plan` next to turn this PRD into a technical plan.
 
 ---
