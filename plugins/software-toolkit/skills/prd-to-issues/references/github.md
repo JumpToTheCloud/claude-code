@@ -30,21 +30,87 @@ The issue body is the PRD. Read it carefully — it contains user stories, funct
    gh project view <project-number> --owner <owner> --format json --jq '.id'
    ```
 
-## Resolving the `Component` and `Phase` fields
+## Resolving the `Component`, `Phase`, and `Status` fields
 
 ```bash
 gh project field-list <project-number> --owner <owner> --format json
 ```
 
-From the result, find the field named `Component` and the field named `Phase`. Each is a
+From the result, find the fields named `Component`, `Phase`, and `Status`. Each is a
 single-select field with its own `id` and a list of options, each with its own `id` and `name`.
 Record:
 - `component-field-id`, and the `id` for the option matching the PRD's Component
 - `phase-field-id`, and the `id` for the `Discovery` option
+- `status-field-id`, and the `id`s for whichever `Status` options this skill needs
+  (`Backlog`, `Ready for Breakdown`, `Broken Down` — see each skill's own `SKILL.md` for which
+  it sets and when)
 
-If either field is missing from the Project, or the option you need doesn't exist (e.g. the
-Component isn't configured as an option yet), **stop and tell the user** — adding a field or
-option to a shared Project is a board-admin action; don't create it yourself.
+If a field is missing from the Project, or an option you need doesn't exist (e.g. the Component
+isn't configured as an option yet, or the Discovery-specific Status values haven't been added),
+**stop and tell the user** — adding a field or option to a shared Project is a board-admin
+action; don't create it yourself. `prd`/`plan`/`analyze` treat a missing `Status` option as
+best-effort (warn and continue) rather than a hard stop, since it's a tracking nicety, not a
+requirement for producing a PRD/plan/analysis — see their own `SKILL.md`. `prd-to-issues`
+still stops hard on a missing `Component`/`Phase` option, same as before.
+
+## Finding a Project item for an existing issue
+
+Needed whenever a skill updates `Status` on an issue that already has a Project item (the PRD,
+when `plan`/`analyze` touch it) rather than one it just created itself:
+
+```bash
+gh project item-list <project-number> --owner <owner> --format json \
+  --jq '.items[] | select(.content.number == <issue-number>)'
+```
+
+The result includes the item's `id` (needed for `item-edit`) directly, along with `status`,
+`component`, and `phase` as plain fields — no need to dig into a nested fields array.
+
+## Resolving the "Feature" Issue Type
+
+Every implementation issue this skill creates gets the native GitHub Issue Type `Feature` (not
+a label) — same mechanism `prd` uses for the `PRD` type, see `prd/references/github.md` ("Step
+1 — Resolve the 'PRD' Issue Type") for the full reasoning. Issue Types are organization-level:
+
+```bash
+gh api graphql -f query='
+  query($owner: String!) {
+    organization(login: $owner) {
+      issueTypes(first: 50) {
+        nodes { id name isEnabled }
+      }
+    }
+  }' -f owner="<org>" --jq '.data.organization.issueTypes.nodes'
+```
+
+Find the node whose `name` is `"Feature"` and keep its `id`. If the org has no Issue Types at
+all (e.g. the Component's repo belongs to a personal account), fall back to a `feature` label
+instead — create it first if missing (`gh label create feature --repo <component-repo> ...`).
+Do not attempt to create the Issue Type itself.
+
+## Ensuring the `afk`/`hitl` labels exist
+
+Unlike Issue Types and Project fields/options, these are ordinary repo labels — low-stakes and
+local, so this skill creates them itself rather than only warning:
+
+```bash
+gh label list --repo <component-repo> --json name --jq '.[].name'
+```
+
+For whichever of `afk`/`hitl` is missing from that list:
+
+```bash
+gh label create afk --repo <component-repo> --color "1D76DB" \
+  --description "Can be implemented and merged without human interaction"
+gh label create hitl --repo <component-repo> --color "D93F0B" \
+  --description "Requires human interaction (architectural decision, design review, external approval)"
+```
+
+Then resolve their node IDs (needed for `labelIds` below):
+
+```bash
+gh label list --repo <component-repo> --json id,name --jq '.[] | select(.name == "afk" or .name == "hitl")'
+```
 
 ## Resolving the Component → repo mapping
 
@@ -85,17 +151,56 @@ config key needed.
   `<repo2>` self-declare Component `<component>` — fix the duplicate declaration before
   continuing."* Never pick one arbitrarily.
 
+## Resolving the PRD's Milestone
+
+Milestones are repo-local (unlike the Project), so this is the earliest point the target repo
+is known. Same low-stakes philosophy as the `afk`/`hitl` labels — this skill creates it itself
+rather than only warning; it's an ordinary repo entity, not board/org-admin infrastructure.
+
+Name: `PRD #<prd-issue-number>: <prd-title>` — unique, traceable to the source PRD at a glance.
+
+Check whether it already exists first (so re-running this skill on the same PRD, e.g. after
+adding more slices, reuses it instead of duplicating):
+
+```bash
+gh api repos/<component-repo>/milestones --paginate --jq \
+  '.[] | select(.title == "PRD #<prd-issue-number>: <prd-title>")'
+```
+
+If found, record its `node_id`. If not, create it:
+
+```bash
+gh api --method POST repos/<component-repo>/milestones \
+  -f title="PRD #<prd-issue-number>: <prd-title>" \
+  -f due_on="<ISO-8601-datetime>" \
+  --jq '.node_id'
+```
+
+Only pass `-f due_on=...` when the PRD's `**Deadline**` field is set to something other than
+"None" — omit the flag entirely otherwise, rather than guessing a date.
+
+Record the returned `node_id` — that's the `milestoneId` used in every `createIssue` mutation
+below.
+
 ---
 
 ## Creating Issues
 
 Create each issue **in the Component's repo** (not necessarily the repo the PRD issue lives
-in), using this template for the body:
+in), with Issue Type `Feature`, directly inside the shared Project — one `createIssue` GraphQL
+mutation does all three (same combined pattern `prd` uses for the PRD issue; see
+`prd/references/github.md` — "Step 2 — Create the issue with that Issue Type, directly in the
+Project" for why body/title go through temp files rather than inline shell interpolation).
+
+First, resolve the Component repo's node ID (once, reuse for every issue):
 
 ```bash
-gh issue create --repo <component-repo> \
-  --title "<slice title>" \
-  --body "$(cat <<'EOF'
+gh repo view <component-repo> --json id --jq '.id'
+```
+
+Write the body to a temp file using this template, then create the issue:
+
+```markdown
 ## Parent PRD
 
 #<prd-issue-number>
@@ -121,10 +226,50 @@ Or "None — can start immediately" if no blockers.
 Reference by number from the parent PRD:
 - User story 1
 - User story 3
-
-EOF
-)"
 ```
+
+```bash
+gh api graphql -f query='
+  mutation($repositoryId: ID!, $title: String!, $body: String!, $issueTypeId: ID!, $projectId: ID!, $labelId: ID!, $milestoneId: ID!) {
+    createIssue(input: {
+      repositoryId: $repositoryId,
+      title: $title,
+      body: $body,
+      issueTypeId: $issueTypeId,
+      projectV2Ids: [$projectId],
+      labelIds: [$labelId],
+      milestoneId: $milestoneId
+    }) {
+      issue {
+        id
+        number
+        url
+        projectItems(first: 5) { nodes { id } }
+      }
+    }
+  }' \
+  -f repositoryId="<component-repo-node-id>" \
+  -F title=@<path-to-title.txt> \
+  -F body=@<path-to-body.md> \
+  -f issueTypeId="<feature-issue-type-id>" \
+  -f projectId="<project-node-id>" \
+  -f labelId="<afk-or-hitl-label-node-id>" \
+  -f milestoneId="<milestone-node-id-from-above>"
+```
+
+`$labelId` is **either** the `afk` or the `hitl` label's node ID — whichever Step 2 classified
+this slice as, never both (don't pass a two-element array here).
+
+If falling back to the `feature` label (no Issue Types in this org), use
+`gh issue create --repo <component-repo> --title ... --body-file <path> --label feature --label
+afk-or-hitl --milestone "<milestone-title>"` instead — that path doesn't set a Project
+membership or Issue Type, so still follow up with `gh project item-add` (see
+`prd/references/github.md` for that call shape) to add it to the Project, and fetch the issue's
+node `id` separately (`gh issue view <number> --json id`) for the dependency-linking step below.
+
+Record the issue `id` (its node ID — needed for `addBlockedBy` below), `number`, `url`, and the
+single `id` under `issue.projectItems.nodes` (the Project item ID, used in the next section — no
+separate `gh project item-add` call needed when the GraphQL path was used).
 
 Create issues in **dependency order** (blockers first) so you can reference real issue numbers
 in the "Blocked by" field. Note that `#<prd-issue-number>` only renders as a live cross-reference
@@ -137,24 +282,59 @@ succeeded and what didn't, and let the user decide how to proceed.
 
 Do NOT close or modify the parent PRD issue.
 
-### Add each issue to the shared Project and set its fields
-
-For every issue created:
+### Set `Component`, `Phase`, and `Status` on each issue's Project item
 
 ```bash
-gh project item-add <project-number> --owner <owner> \
-  --url <issue-url> --format json --jq '.id'
-
 gh project item-edit --project-id <project-node-id> --id <item-id> \
   --field-id <component-field-id> --single-select-option-id <component-option-id>
 
 gh project item-edit --project-id <project-node-id> --id <item-id> \
   --field-id <phase-field-id> --single-select-option-id <discovery-option-id>
+
+gh project item-edit --project-id <project-node-id> --id <item-id> \
+  --field-id <status-field-id> --single-select-option-id <backlog-option-id>
 ```
 
 `Component` is the same value inherited from the parent PRD. `Phase` is always set to
 `Discovery` — nothing in this skill ever sets `Phase` to `Execution`; that transition is
-reserved for a future GitHub port of `iteration-plan`.
+reserved for a future GitHub port of `iteration-plan`. `Status` is always set to `Backlog` on
+a freshly created implementation issue, regardless of `Phase`.
+
+### Setting native Blocked-by relationships
+
+For every "Blocked by" relationship a slice has (the blocking issue must already exist — this
+is why creation order matters), link them natively in addition to the text reference already in
+the body:
+
+```bash
+gh api graphql -f query='
+  mutation($issueId: ID!, $blockingIssueId: ID!) {
+    addBlockedBy(input: { issueId: $issueId, blockingIssueId: $blockingIssueId }) {
+      issue { number }
+      blockingIssue { number }
+    }
+  }' \
+  -f issueId="<this-issue-node-id>" \
+  -f blockingIssueId="<blocking-issue-node-id>"
+```
+
+Both IDs are issue **node** IDs (the `id` field from `createIssue`'s response, or from
+`gh issue view <number> --json id` for issues created via the label-fallback path) — not issue
+numbers. If this call fails, treat it the same as a failed issue creation: stop immediately and
+report exactly which dependency links succeeded and which didn't, alongside which issues were
+created — don't let a missing native link pass silently, since the whole point is for tooling
+to be able to trust it later.
+
+### Mark the PRD as `Broken Down`
+
+Once every issue above has been created successfully (and only then — see the partial-failure
+rule above), find the PRD's own Project item (using "Finding a Project item for an existing
+issue" above, with the PRD's issue number) and set its `Status` to `Broken Down`:
+
+```bash
+gh project item-edit --project-id <project-node-id> --id <prd-item-id> \
+  --field-id <status-field-id> --single-select-option-id <broken-down-option-id>
+```
 
 ---
 
@@ -162,6 +342,8 @@ reserved for a future GitHub port of `iteration-plan`.
 
 After all issues are created, report the full list:
 - Issue numbers, titles, and repos
-- URLs (returned by `gh issue create`)
-- Component and Phase set on each
-- Any blockers or dependencies noted
+- URLs (returned by `createIssue`)
+- Component, Phase, and Status set on each, and the PRD's own `Status: Broken Down`
+- Which of `afk`/`hitl` each issue got
+- Native dependency links established (and any that failed)
+- The milestone title and URL every issue was assigned to

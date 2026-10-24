@@ -1,6 +1,6 @@
 ---
 name: prd-to-issues
-description: Break a PRD (a GitHub issue written by /prd) into independently-grabbable issues using tracer-bullet vertical slices, created in the repo its Component maps to and added to the team's shared GitHub Project with Component and Phase fields set. Use whenever the user wants to convert a PRD to issues, create implementation tickets, break down a spec into work items, or create GitHub issues from a PRD. Trigger on "prd-to-issues", "break PRD into issues", "create issues from PRD", "create GitHub issues from PRD", "create tasks from spec", or any variation of converting a product spec into implementation tasks.
+description: Break a PRD (a GitHub issue written by /prd) into independently-grabbable issues using tracer-bullet vertical slices, created with the native "Feature" Issue Type, an afk/hitl label, a per-PRD Milestone, and native GitHub issue dependencies, in the repo its Component maps to, added to the team's shared GitHub Project with Component and Phase fields set. Use whenever the user wants to convert a PRD to issues, create implementation tickets, break down a spec into work items, or create GitHub issues from a PRD. Trigger on "prd-to-issues", "break PRD into issues", "create issues from PRD", "create GitHub issues from PRD", "create tasks from spec", or any variation of converting a product spec into implementation tasks.
 context: fork
 agent: prd-to-issues
 background: false
@@ -10,8 +10,10 @@ allowed-tools: Bash(gh issue *), Bash(gh api *), Bash(gh project *), Bash(gh rep
 # PRD to Issues
 
 Break a PRD into independently-grabbable GitHub issues using vertical slices (tracer bullets).
-Issues are created in the repo the PRD's Component maps to, added to the shared GitHub Project,
-and linked back to the source PRD with dependencies and blockers.
+Issues are created with the native `Feature` Issue Type, exactly one of the `afk`/`hitl`
+labels, and this PRD's Milestone, in the repo the PRD's Component maps to, added to the shared
+GitHub Project, and linked back to the source PRD and to each other via both a text reference
+and a native GitHub dependency link.
 
 This skill runs in an isolated `prd-to-issues` subagent with no visibility into the conversation
 that triggered it — the PRD issue number arrives as the input and everything else (Component,
@@ -40,23 +42,35 @@ This is a warning, not a hard block — respect the user's choice either way.
 
 ---
 
-## Step 0b — Resolve the Component and its target repo
+## Step 0b — Resolve the Component, its target repo, and the "Feature" Issue Type
 
 Read `references/github.md` ("Resolving the shared Project", "Resolving the Component → repo
-mapping") and follow it:
+mapping", "Resolving the 'Feature' Issue Type") and follow it:
 1. Resolve the shared GitHub Project (config, token scope, node ID).
-2. Resolve the `Component` and `Phase` field/option IDs on that Project.
+2. Resolve the `Component`, `Phase`, and `Status` field/option IDs on that Project.
 3. Find the PRD's Project item and read its `Component` value.
 4. Discover which repo self-declares that Component (`gh search code` across the org — there is
    no central table; see `references/github.md` for the exact queries and how to handle zero or
    multiple matches).
 5. Verify the discovered repo actually exists and is reachable: `gh repo view <component-repo>`.
+6. Resolve the organization's "Feature" Issue Type (every implementation issue this skill
+   creates gets that type). If the org has no Issue Types at all (e.g. the repo's owner is a
+   personal account), fall back to a `feature` label instead — same fallback `prd` uses for the
+   "PRD" type.
+7. Ensure the `afk` and `hitl` labels exist in the Component's repo — create them if missing
+   (see `references/github.md` — "Ensuring the afk/hitl labels exist"). Unlike Issue Types and
+   Project fields, repo labels are low-stakes and local, so this skill creates them itself
+   rather than only warning.
+8. Resolve or create this PRD's Milestone in the Component's repo (see `references/github.md`
+   — "Resolving the PRD's Milestone"): named `PRD #<prd-issue-number>: <prd-title>`, reused if
+   it already exists (e.g. a prior run on the same PRD), created otherwise. Same low-stakes
+   philosophy as the labels — this skill creates it itself.
 
 If any of these is missing or unresolvable (Project, field, option, no repo declares the
-Component, more than one repo declares it, or the repo itself is unreachable), stop and ask the
-user rather than guessing. Checking the repo exists *here* — before exploring code or drafting
-slices — avoids discovering a typo'd or undeclared Component only after several issues have
-already been created against it.
+Component, more than one repo declares it, the repo itself is unreachable, or no "Feature"
+Issue Type and no way to fall back), stop and ask the user rather than guessing. Checking the
+repo exists *here* — before exploring code or drafting slices — avoids discovering a typo'd or
+undeclared Component only after several issues have already been created against it.
 
 ---
 
@@ -79,7 +93,9 @@ follow and avoid reimplementing what's already there.
 
 Break the PRD into **tracer bullet** slices. Each slice is a thin vertical cut through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
 
-Slices may be 'HITL' or 'AFK':
+Every slice is **exactly one** of 'HITL' or 'AFK' — never both, never neither. This becomes a
+label (`hitl` or `afk`) on the created issue, so the classification has to be a clean binary
+choice, not a spectrum:
 - **HITL**: requires human interaction (architectural decision, design review, external approval)
 - **AFK**: can be implemented and merged without human interaction
 
@@ -124,30 +140,50 @@ Iterate until the user approves the breakdown.
 
 ## Step 4 — Create the issues
 
-Read `references/github.md` ("Creating Issues") for the exact commands.
+Read `references/github.md` ("Creating Issues", "Setting native Blocked-by relationships") for
+the exact commands.
 
-**Order matters**: always create blockers before blocked issues so you can reference real issue
-numbers in the "Blocked by" section.
+**Order matters**: always create blockers before blocked issues — this is required (not just
+convenient) now, since the native dependency link in step 5 below needs the blocking issue's
+real node ID to already exist, and it also lets you reference real issue numbers in the
+"Blocked by" text section.
 
-1. Create each issue in the Component's repo, in dependency order.
+1. Create each issue in the Component's repo, with Issue Type `Feature` (or the `feature` label
+   fallback) **and** the `afk` or `hitl` label (exactly one, from Step 2's classification),
+   directly inside the shared Project, **and** assigned to this PRD's Milestone (resolved in
+   Step 0b) — one `createIssue` GraphQL mutation does all of this, same pattern `prd` uses for
+   the PRD issue itself. In dependency order.
 2. Reference real issue numbers (or the full URL, if the PRD lives in a different repo) in the
-   "Blocked by" section.
+   "Blocked by" text section — keep this even though step 5 also sets a native relationship;
+   it's the quick-glance version for someone reading the issue body.
 3. Link back to the parent PRD issue.
-4. Add the new issue to the shared Project and set `Component` (inherited from the PRD) and
-   `Phase = Discovery` on it.
+4. Set `Component` (inherited from the PRD), `Phase = Discovery`, and `Status = Backlog` on the
+   Project item returned by that same mutation.
+5. For each "Blocked by" relationship this slice has, call `addBlockedBy` (GraphQL) with this
+   issue's node ID and the blocking issue's node ID — a **native** GitHub dependency, not just
+   the text reference. This is what lets tooling later query "what's unblocked right now"
+   instead of parsing issue bodies, which matters once work is parallelized across people/agents.
 
 **If any step fails partway through** (network error, permission error, a `gh` call rejected,
-etc.): stop immediately. Do not continue to the next slice and do not attempt to delete or
-revert the issues already created — report exactly which issues were created (numbers, URLs,
-Component/Phase set) and which were not, and ask the user how they want to proceed. A shared
-Project and repo are not yours to silently roll back.
+a dependency link rejected, etc.): stop immediately. Do not continue to the next slice and do
+not attempt to delete or revert the issues already created — report exactly which issues were
+created (numbers, URLs, Component/Phase/Status/label set, which dependency links succeeded) and
+which were not, and ask the user how they want to proceed. A shared Project and repo are not
+yours to silently roll back.
+
+Once every issue has been created successfully, mark the PRD itself as done with Discovery:
+find its Project item and set its `Status` to `Broken Down` (see `references/github.md` —
+"Mark the PRD as Broken Down"). If the Status field is missing the `Broken Down` option, warn
+and skip this one step — don't let a missing tracking option undo work that already
+succeeded.
 
 Do NOT close or modify the parent PRD issue.
 
 ## Step 5 — Report
 
-Tell the user what was created: issue numbers, titles, repo, URLs, and the Component/Phase set
-on each.
+Tell the user what was created: issue numbers, titles, repo, URLs, the Component/Phase/Status
+set on each, which of `afk`/`hitl` each got, the native dependency links established, the
+Milestone every issue was assigned to, and the PRD's own `Status: Broken Down`.
 
 If the user has not yet run `/analyze` on the spec, suggest it as a quality gate before
 implementation begins.
@@ -158,6 +194,14 @@ implementation begins.
 
 - Issues always go in the repo the PRD's Component maps to — never in the PRD's own repo unless
   they happen to be the same.
+- Every issue this skill creates gets Issue Type `Feature` (or the `feature` label fallback) —
+  never left untyped, and never any other Issue Type.
+- Every issue gets exactly one of the `afk`/`hitl` labels — never both, never neither.
+- Every "Blocked by" relationship gets both the text reference in the body **and** a native
+  `addBlockedBy` link — the text is for humans skimming the issue, the native link is for
+  tooling/automation that needs to query dependency state, so neither replaces the other.
+- Every issue this skill creates belongs to this PRD's Milestone (`PRD #<number>: <title>`) —
+  reuse an existing one with that exact title instead of creating a duplicate.
 - `Phase` is always set to `Discovery` on every issue this skill creates. Nothing in this skill
   ever sets `Phase` to `Execution` — that transition belongs to a future GitHub port of
   `iteration-plan`, out of scope here.
