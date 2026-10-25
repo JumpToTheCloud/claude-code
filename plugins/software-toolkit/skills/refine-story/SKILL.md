@@ -125,7 +125,10 @@ as-is — it's already where it needs to be.
   `prd-to-issues`).
 - The parent PRD: follow `Parent PRD: #N` → `gh issue view` on it, including its **Success
   Criteria** section — there's no separate Epic concept in this pipeline, the PRD itself fills
-  that role.
+  that role. If the enriched issue body includes a section mapping this Feature's work back to
+  the PRD's Success Criteria, title it exactly `## PRD Success Criteria coverage` — never
+  "Epic Success Criteria coverage" or any other "Epic" phrasing; there's nothing in this
+  pipeline that term should ever refer to.
 - Issues that block this one, via the native `Issue.blockedBy` connector (see
   `references/github.md`) — not the text "Blocked by" section, which is just the human-readable
   mirror of the same data.
@@ -271,6 +274,9 @@ latter group, taken from that issue's own session comment) — plus the total co
 - Never discard an Acceptance Criterion `prd-to-issues` already wrote — only enrich.
 - Business Value, Risk, and Order Rank are gone for good — do not reintroduce them or invent a
   replacement formula.
+- Never use "Epic" anywhere in a published issue body or comment — this pipeline has no Epic
+  concept (the PRD fills that role). A Success-Criteria-coverage section, if included, is titled
+  `## PRD Success Criteria coverage`.
 - Headless execution is a first-class path through every step above, not a hypothetical —
   design and test against it, don't treat it as an edge case.
 - This skill only ever runs on `Status: Backlog` or `Status: Refining` — any other `Status` is a
