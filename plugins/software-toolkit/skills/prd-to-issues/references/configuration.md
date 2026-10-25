@@ -12,16 +12,21 @@ something the skills create on their own:
 2. **A shared GitHub Project (v2)** with these single-select/number custom fields:
    - `Component` — one option per repo these skills create issues into (e.g. `FACTORY CLUSTER`,
      `FACTORY DISPATCHER`).
-   - `Phase` — at least a `Discovery` option (an `Execution` option too, for when a future phase
-     of this pipeline starts setting it — nothing today does, `iteration-plan`'s sub-tasks stay
-     at `Discovery` same as their parent Feature).
+   - `Phase` — `Discovery` and `Execution` both needed and both actively used: every PRD and
+     Feature lives at `Discovery` until `iteration-plan` finishes breaking a Feature down, at
+     which point the Feature (and every sub-task `iteration-plan` creates, from the start) moves
+     to `Execution`. `prd`/`plan`/`analyze`/`prd-to-issues` only ever write `Discovery`.
    - `Status` — GitHub Projects' 5 defaults (`Backlog`, `Ready`, `In Progress`, `In Review`,
-     `Done`) cover the Execution phase. Discovery needs 5 more options added alongside them:
-     `Planning`, `Analysis`, `Ready for Breakdown`, `Broken Down`, and `Refining` — set by `plan`,
-     `analyze`, `prd-to-issues`, and `refine-story` respectively as work moves through the
-     pipeline. `prd`/`plan`/`analyze`/`refine-story` treat a missing Status option as
-     best-effort (warn, don't block); only `prd-to-issues` treats a missing `Component`/`Phase`
-     option as a hard stop.
+     `Done`) are reused across both phases — the same `Status` value means something different
+     depending on `Phase` (e.g. `Ready` + `Discovery` means "ready for `/iteration-plan`"; `Ready`
+     + `Execution` means "fully broken down, ready for the execution orchestrator" — always read
+     `Status` and `Phase` together, never `Status` alone, past this point). Discovery needs 5
+     more options added alongside the defaults: `Planning`, `Analysis`, `Ready for Breakdown`,
+     `Broken Down`, and `Refining` — set by `plan`, `analyze`, `prd-to-issues`, and `refine-story`
+     respectively as a PRD/Feature moves through Discovery; `iteration-plan` also reuses
+     `Planning` while it's actively breaking a Feature down. `prd`/`plan`/`analyze`/
+     `refine-story` treat a missing Status option as best-effort (warn, don't block); only
+     `prd-to-issues` treats a missing `Component`/`Phase` option as a hard stop.
    - `Size` (single-select, `XS`–`XL`) and `Estimate` (number, Story Points) — set by
      `refine-story` on the Feature. `iteration-plan` reads both but never writes `Estimate` (its
      own sub-task hour estimates live in the issue body text, not this field, to avoid mixing
@@ -63,11 +68,16 @@ only the user can resolve (which repo is it supposed to be?).
 ## Headless execution (GitHub Actions)
 
 `refine-story` and `iteration-plan` are designed to run unattended inside a GitHub Actions job
-triggered by a `Status` change (to `Refining` or `Ready` respectively) — this is a current
-requirement of this pipeline, not a future possibility. Both detect this via the `GITHUB_ACTIONS`
-env var (set automatically by every Actions job) and switch their behavior: no
-`AskUserQuestion`, gaps become named assumptions instead of questions, and proposals publish
-directly instead of waiting for approval. See each skill's own `SKILL.md` ("Detecting headless
-execution") for the exact mechanism and what still fails visibly (a broken `Status` precondition
-always does, headless or not). The webhook → Actions wiring itself is a separate, already
-in-progress piece of work, not part of either skill.
+triggered by a `Status`/`Phase` change on a Feature (`Status: Refining` for `refine-story`;
+`Status: Ready` + `Phase: Discovery` for `iteration-plan` — `Status` alone is never enough to
+trigger the right skill, since `Status: Ready` also occurs at `Phase: Execution`, meaning
+something entirely different) — this is a current requirement of this pipeline, not a future
+possibility. Both detect headless execution via the `GITHUB_ACTIONS` env var (set automatically
+by every Actions job) and switch their behavior: no `AskUserQuestion`, gaps become named
+assumptions instead of questions, and proposals publish directly instead of waiting for
+approval. See each skill's own `SKILL.md` ("Detecting headless execution") for the exact
+mechanism and what still fails visibly (a broken `Status`/`Phase` precondition always does,
+headless or not). The webhook → Actions wiring itself is a separate, already in-progress piece
+of work, not part of either skill — and so is the execution orchestrator that `iteration-plan`
+hands off to (watching for `Status: Ready` + `Phase: Execution` + Issue Type `Feature`, reading
+the Feature's sub-issues and working through them in order).

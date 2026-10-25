@@ -203,8 +203,9 @@ implementation begins.
 - Every issue this skill creates belongs to this PRD's Milestone (`PRD #<number>: <title>`) —
   reuse an existing one with that exact title instead of creating a duplicate.
 - `Phase` is always set to `Discovery` on every issue this skill creates. Nothing in this skill
-  ever sets `Phase` to `Execution` — that transition belongs to a future GitHub port of
-  `iteration-plan`, out of scope here.
+  ever sets `Phase` to `Execution` — that happens later, on the Feature itself, once
+  `/iteration-plan` finishes breaking it down (and directly, at creation time, on each of its
+  sub-tasks) — out of scope here.
 - If the Component → repo mapping, the Project, or its fields can't be resolved, stop and ask —
   never guess a repo or skip setting a field silently.
 - Never present a breakdown with a dependency cycle — detect and resolve it before Step 3.

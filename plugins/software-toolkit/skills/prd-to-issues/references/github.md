@@ -296,9 +296,10 @@ gh project item-edit --project-id <project-node-id> --id <item-id> \
 ```
 
 `Component` is the same value inherited from the parent PRD. `Phase` is always set to
-`Discovery` — nothing in this skill ever sets `Phase` to `Execution`; that transition is
-reserved for a future GitHub port of `iteration-plan`. `Status` is always set to `Backlog` on
-a freshly created implementation issue, regardless of `Phase`.
+`Discovery` — nothing in this skill ever sets `Phase` to `Execution`; `/iteration-plan` is what
+moves a Feature (and its sub-tasks) into `Execution`, once the Feature is fully broken down.
+`Status` is always set to `Backlog` on a freshly created implementation issue, regardless of
+`Phase`.
 
 ### Setting native Blocked-by relationships
 
