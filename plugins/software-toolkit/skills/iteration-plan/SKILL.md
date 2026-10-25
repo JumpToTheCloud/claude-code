@@ -1,6 +1,6 @@
 ---
 name: iteration-plan
-description: Break a refined GitHub Feature (Status Ready, already processed by /refine-story) into technical sub-tasks — codebase analysis, TDD/branching decisions, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels. Use whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also runs unattended inside a GitHub Actions job (no human present) when a Feature's Status reaches Ready — trigger on "/iteration-plan", "iteration plan issue #N", "split this feature into tasks", "break down this feature", or any variation of turning a ready Feature into implementation sub-tasks.
+description: Break a refined GitHub Feature (Status Ready + Phase Discovery, already processed by /refine-story) into technical sub-tasks — codebase analysis, TDD/branching decisions, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels — then moves the Feature itself to Status Ready + Phase Execution, the signal a separate execution orchestrator picks up to run the whole Feature. Use whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also runs unattended inside a GitHub Actions job (no human present) when a Feature reaches that Status+Phase combination — trigger on "/iteration-plan", "iteration plan issue #N", "split this feature into tasks", "break down this feature", or any variation of turning a ready Feature into implementation sub-tasks.
 context: fork
 agent: iteration-plan
 background: false
@@ -9,17 +9,24 @@ allowed-tools: Bash(gh issue *), Bash(gh api *), Bash(gh project *), Bash(gh rep
 
 # /iteration-plan — Split a Feature into Sub-tasks
 
-Take a refined GitHub Feature (`Status: Ready`, already processed by `/refine-story`) and break
-it into 4–8-hour technical sub-tasks, created as native sub-issues of the Feature with native
-dependencies between them.
+Take a refined GitHub Feature (`Status: Ready` **and** `Phase: Discovery` — already processed
+by `/refine-story`) and break it into 4–8-hour technical sub-tasks, created as native sub-issues
+of the Feature with native dependencies between them. Once every sub-task exists, this skill
+moves the Feature itself to `Status: Ready` + `Phase: Execution` — the same `Status` value as
+before, but a different `Phase` entirely changes what it means: a separate, not-yet-built
+execution orchestrator treats *that* specific combination (`Ready` + `Execution` + Issue Type
+`Feature`) as "pick up this whole Feature and execute it" — it reads the Feature's sub-issues
+and works through them in order, rather than anything in this skill dispatching per-sub-task
+work itself.
 
 This skill runs in an isolated `iteration-plan` subagent with no visibility into the
 conversation that triggered it — the Feature issue number (or none, to search for Ready
-Features) arrives as the input and everything else is re-derived from GitHub and the local
-codebase.
+Discovery-phase Features) arrives as the input and everything else is re-derived from GitHub and
+the local codebase.
 
-**This also runs unattended.** A Feature reaching `Status: Ready` is meant to trigger this skill
-headless inside a GitHub Actions job, same as `/refine-story` reaching `Refining`. Read
+**This also runs unattended.** A Feature reaching `Status: Ready` + `Phase: Discovery` is meant
+to trigger this skill headless inside a GitHub Actions job, same as `/refine-story` reaching
+`Refining`. Read
 `refine-story/SKILL.md`'s "Detecting headless execution" section — the same mechanism
 (`GITHUB_ACTIONS`/`CI` env var, held for the whole run), the same two behavior changes apply
 here (no `AskUserQuestion`, and no waiting for approval before creating sub-tasks — Step 7
@@ -32,17 +39,22 @@ never as narration about how the run that produced them behaved.
 
 ## Step 1 — Resolve the Feature and gate
 
-By issue number if given; otherwise search `Status: Ready` Features in the Project and ask the
-user which one (headless: this skill should always be invoked with an explicit issue number in
-that case — if it isn't, fail visibly rather than guessing which Feature to plan).
+By issue number if given; otherwise search for Features with `Status: Ready` **and** `Phase:
+Discovery` in the Project and ask the user which one (headless: this skill should always be
+invoked with an explicit issue number in that case — if it isn't, fail visibly rather than
+guessing which Feature to plan).
 
-If `Status` is not `Ready`, same hard-stop handling as `refine-story` Step 1: report "cannot
-plan — not `Ready`" and stop, human or headless, never a "proceed anyway?" question — this
-Feature likely hasn't finished `/refine-story` yet, and this skill isn't the place to negotiate
-that.
+This skill only ever runs on that exact combination — `Status: Ready` **and** `Phase:
+Discovery`. Checking `Status` alone isn't enough: once a Feature has already been through this
+skill, it sits at `Status: Ready` again but with `Phase: Execution` (Step 7b) — same `Status`
+value, different meaning entirely, reserved for the execution orchestrator, not this skill. Any
+combination other than `Ready`+`Discovery` is a hard stop, human or headless, no "proceed
+anyway?" question: report "cannot plan — not `Ready`/`Discovery`" and stop — this Feature either
+hasn't finished `/refine-story` yet, or has already been broken down.
 
-If the Project has an `Iteration` field, and this Feature isn't assigned to one that hasn't
-started yet, warn — don't block.
+Set `Status = Planning` immediately once the gate passes (best-effort — missing option = warn
+and skip, never block) — same pattern `/refine-story` uses for `Refining`, so the board shows
+something is actively working on this Feature's breakdown.
 
 ---
 
@@ -126,8 +138,13 @@ same requirement `prd-to-issues` has):
    from Step 3.
 2. Create the issue in the Feature's own repo, Issue Type `Task`, with the category label, the
    `afk`/`hitl` label, and the `tdd` label if Step 5 marked it, added to the same Project and the
-   same Milestone as the parent Feature, `Status = Backlog` — one combined `createIssue`
-   mutation, same pattern `prd-to-issues` uses.
+   same Milestone as the parent Feature, `Status = Ready`, `Phase = Execution` — one combined
+   `createIssue` mutation, same pattern `prd-to-issues` uses. Sub-tasks are born `Ready`, not
+   `Backlog`: the task template already makes each one fully self-contained (interface
+   contracts, phases, pattern to follow, ACs covered), so there's no separate "refine a
+   sub-task" step for anything to wait on. `Phase = Execution` from the moment of creation, not
+   inherited `Discovery` from the parent — a sub-task is itself an execution-phase unit of work,
+   even while its parent Feature is still at `Phase: Discovery` until Step 7b below.
 3. `addSubIssue` — link it as a native sub-issue of the parent Feature.
 4. `addBlockedBy` for each dependency on an already-created sibling sub-task.
 
@@ -140,6 +157,21 @@ sub-tasks were created/linked and which weren't, never roll back silently.
 
 ---
 
+## Step 7b — Move the Feature to Execution
+
+Only once every sub-task above was created and linked successfully (never on a partial
+failure — see above): move the parent Feature itself to `Status = Ready` + `Phase = Execution`.
+
+This is the one signal this skill hands off to whatever picks up next — a separate, not-yet-
+built execution orchestrator watches for Issue Type `Feature` + `Phase: Execution` + `Status:
+Ready` and treats it as "this Feature is fully broken down, go execute it end to end" (reading
+its sub-issues and working through them in order). Setting that orchestrator's own "I've claimed
+this" lock (e.g. flipping `Status` to `In progress` once it starts) is entirely that future
+skill's responsibility, not this one's — this skill's job ends at handing off a clean, complete
+signal, not at managing what happens after.
+
+---
+
 ## Step 8 — Verify AC coverage
 
 Cross-check that every AC on the parent Feature is covered by at least one sub-task (from the
@@ -148,18 +180,39 @@ an uncovered AC.
 
 ---
 
+## Step 8b — Reconcile `Size` against the real split
+
+Sum every sub-task's `Estimate: Xh` (the body text one, never the Project field). Compare that
+total against these thresholds: **XS ≤ 4h, S ≤ 8h, M ≤ 16h, L ≤ 32h**.
+
+Find the smallest option that actually covers the total. If that's **larger** than the
+Feature's current `Size` (or `Size` was never set), update the Project's `Size` field to it —
+the split just produced better information than whatever `Size` was set from before actually
+seeing the breakdown, so let it correct the record rather than silently diverging from it. Never
+shrink `Size` down, even if the total comes out smaller than expected — a lower total isn't a
+correctness problem the same way a higher one is, and `/refine-story`'s own judgment on the
+smaller side isn't this skill's to second-guess.
+
+If the total still exceeds even `XL`'s range (> 32h), there's no larger option to move to —
+leave `Size` at `XL` and instead flag in the report (Step 9) that the Feature itself is
+probably too big and should be reconsidered for splitting, same spirit as the old threshold
+check this step replaces.
+
+Best-effort like every other field write in this pipeline: if `Size` has no options or can't be
+resolved, warn and skip — never block the rest of the report over it.
+
+---
+
 ## Step 9 — Report
 
 Tell the user (or, headless, make sure it's all in the session comment / sub-task bodies
 themselves): the branch name, total estimated hours vs. the parent Feature's `Estimate` (Story
 Points), the count by category and by AFK/HITL, which sub-tasks got the `tdd` label, the
-dependency graph, and AC coverage. If any AC genuinely needs e2e coverage (crosses a deployed-
-service or UI boundary that integration tests alone can't reach), flag it explicitly as an
-out-of-scope gap — e2e sub-task creation isn't something this skill does yet.
-
-Warn if total hours exceed the threshold for the Feature's `Size`: **XS ≤ 4h, S ≤ 8h, M ≤ 16h,
-L ≤ 32h, XL → always suggest considering splitting the Feature itself** rather than just its
-sub-tasks.
+dependency graph, AC coverage, the Feature's final `Status: Ready` + `Phase: Execution` (Step
+7b), and whether `Size` was corrected in Step 8b (from what, to what, and why). If any AC
+genuinely needs e2e coverage (crosses a deployed-service or UI boundary that integration tests
+alone can't reach), flag it explicitly as an out-of-scope gap — e2e sub-task creation isn't
+something this skill does yet.
 
 ---
 
@@ -173,7 +226,18 @@ sub-tasks.
   at that point — don't mark one `tdd` without that genuinely being true.
 - Sub-tasks are always native GitHub sub-issues (`addSubIssue`) of the parent Feature — never
   just text-referenced.
+- Every sub-task is created at `Status: Ready` + `Phase: Execution` directly — never `Backlog`,
+  never inherited `Discovery`. The parent Feature only reaches `Phase: Execution` itself once
+  every sub-task exists (Step 7b) — don't flip the Feature's `Phase` early, and don't leave
+  sub-tasks behind at `Discovery` once it does.
+- This skill only ever runs on `Status: Ready` + `Phase: Discovery` together — checking `Status`
+  alone is not enough, since the same `Status: Ready` value means something entirely different
+  once `Phase` is `Execution` (reserved for the execution orchestrator, not this skill).
 - Hour estimates live only in the sub-task body text — never in the Project's `Estimate` field.
+- `Size` gets corrected **upward only** once the real split is known (Step 8b) — to the
+  smallest option that covers the actual total hours, never shrunk back down, and never past
+  `XL` (which has no larger option to move to; flag the Feature as probably needing a split
+  instead).
 - Headless execution is a first-class path through every step, same as `refine-story` — design
   and run against it, don't treat it as an edge case.
 - Detect and resolve dependency cycles before presenting or creating anything.

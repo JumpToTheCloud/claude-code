@@ -14,11 +14,14 @@ Then its Project item and `Status` (see `prd-to-issues/references/github.md` —
 Project item for an existing issue"), and its `Size`/`Estimate`/`Milestone` values — needed for
 Step 9's threshold check and for assigning sub-tasks to the same Milestone.
 
-## Searching for Ready Features (no issue number given)
+## Searching for Ready, Discovery-phase Features (no issue number given)
+
+Filter on both `Status` and `Phase` — a Feature already broken down sits at `Status: Ready`
+too, just with `Phase: Execution`, and that one is not a match here:
 
 ```bash
 gh project item-list <project-number> --owner <owner> --format json \
-  --jq '.items[] | select(.status == "Ready")'
+  --jq '.items[] | select(.status == "Ready" and .phase == "Discovery")'
 ```
 
 Present the matches and ask the user which one — this path only applies with a human present
@@ -108,10 +111,33 @@ $tddLabelId]` / `-f tddLabelId="<tdd-label-node-id>"`) — never add it for any 
 the Feature's own issue data (`gh issue view <feature-number> --json milestone`) rather than
 re-resolving or creating a new one.
 
-Then set `Component`/`Phase`/`Status` on the Project item exactly as `prd-to-issues` does for
-its implementation issues (`Phase = Discovery` stays correct here too — sub-tasks are still
-pre-implementation planning artifacts; nothing in this pipeline sets `Phase = Execution` yet),
-`Status = Backlog`.
+Then set `Component`/`Phase`/`Status` on the Project item the same `gh project item-edit`
+pattern `prd-to-issues` uses for its implementation issues — but with different values here:
+`Phase = Execution` (not `Discovery` — a sub-task is itself an execution-phase unit of work from
+the moment it exists) and `Status = Ready` (not `Backlog` — see `SKILL.md` Step 7 for why).
+
+## Setting `Status` on the Feature itself (Step 1 and Step 7b)
+
+At the start (Step 1, gate passed): set the parent Feature's own `Status` to `Planning`:
+
+```bash
+gh project item-edit --project-id <project-node-id> --id <feature-item-id> \
+  --field-id <status-field-id> --single-select-option-id <planning-option-id>
+```
+
+At the end (Step 7b, only after every sub-task succeeded): set the Feature's `Status` to `Ready`
+**and** `Phase` to `Execution`:
+
+```bash
+gh project item-edit --project-id <project-node-id> --id <feature-item-id> \
+  --field-id <status-field-id> --single-select-option-id <ready-option-id>
+
+gh project item-edit --project-id <project-node-id> --id <feature-item-id> \
+  --field-id <phase-field-id> --single-select-option-id <execution-option-id>
+```
+
+Both of these are best-effort, same as every other `Status`/`Phase` write in this pipeline — a
+missing option is a warning, never a reason to block.
 
 ## Setting native sub-issue hierarchy and dependencies
 
@@ -134,11 +160,29 @@ relationships"), with both node IDs being sub-task issues this time instead of F
 If either call fails, treat it exactly like a failed issue creation: stop immediately and report
 which sub-tasks and links succeeded and which didn't.
 
+## Correcting `Size` against the real split (Step 8b)
+
+The `Size` field's options and their IDs were already resolved earlier (same `gh project
+field-list` lookup `prd-to-issues`/`refine-story` use — see `prd-to-issues/references/github.md`
+"Resolving the `Component`, `Phase`, and `Status` fields" for the pattern; `Size` works
+identically). Only write it if the smallest option covering the real total is larger than the
+Feature's current `Size`:
+
+```bash
+gh project item-edit --project-id <project-node-id> --id <feature-item-id> \
+  --field-id <size-field-id> --single-select-option-id <corrected-size-option-id>
+```
+
+If the total exceeds even `XL`'s range, don't write anything here — there's no larger option —
+just note it for Step 9's report.
+
 ## Reporting
 
 After all sub-tasks are created, report:
 - Sub-task numbers, titles, URLs, category + afk/hitl labels, and which got the `tdd` label
 - Native sub-issue links established (and any that failed)
 - Native dependency links established (and any that failed)
-- The branch name, total estimated hours vs. the Feature's `Size` threshold
+- The branch name, total estimated hours vs. the Feature's `Size` threshold, and whether `Size`
+  was corrected (from what, to what)
 - AC coverage check result
+- The Feature's final `Status: Ready` + `Phase: Execution` (Step 7b)
