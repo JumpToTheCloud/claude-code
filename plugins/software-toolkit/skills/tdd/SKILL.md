@@ -59,6 +59,12 @@ re-ask what the issue already states:
 - If you disagree with the `tdd` label after reading the issue (e.g. it turns out to be a pure
   spike or a config-only change with nothing meaningfully testable through a public interface),
   say so and confirm with the user before dropping the practice — don't silently skip it.
+- **Running unattended** (you're the `task-executor` worker dispatched by `/execute-feature`,
+  with nobody to answer): the issue *is* the approved plan. Skip every "confirm with user" /
+  "get user approval" item in Step 1 — the Interface Contracts are the interface, the Acceptance
+  Criteria in their written order are the behaviors and their priority. Disagreeing with the
+  `tdd` label doesn't let you drop the practice either: build it test-first anyway, and say why
+  you disagree in your findings.
 
 ## Workflow
 
