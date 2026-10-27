@@ -13,11 +13,11 @@ Take a refined GitHub Feature (`Status: Ready` **and** `Phase: Discovery` — al
 by `/refine-story`) and break it into 4–8-hour technical sub-tasks, created as native sub-issues
 of the Feature with native dependencies between them. Once every sub-task exists, this skill
 moves the Feature itself to `Status: Ready` + `Phase: Execution` — the same `Status` value as
-before, but a different `Phase` entirely changes what it means: a separate, not-yet-built
-execution orchestrator treats *that* specific combination (`Ready` + `Execution` + Issue Type
+before, but a different `Phase` entirely changes what it means: the execution orchestrator,
+`/execute-feature`, treats *that* specific combination (`Ready` + `Execution` + Issue Type
 `Feature`) as "pick up this whole Feature and execute it" — it reads the Feature's sub-issues
-and works through them in order, rather than anything in this skill dispatching per-sub-task
-work itself.
+and works through them in dependency order, rather than anything in this skill dispatching
+per-sub-task work itself.
 
 This skill runs in an isolated `iteration-plan` subagent with no visibility into the
 conversation that triggered it — the Feature issue number (or none, to search for Ready
@@ -162,13 +162,13 @@ sub-tasks were created/linked and which weren't, never roll back silently.
 Only once every sub-task above was created and linked successfully (never on a partial
 failure — see above): move the parent Feature itself to `Status = Ready` + `Phase = Execution`.
 
-This is the one signal this skill hands off to whatever picks up next — a separate, not-yet-
-built execution orchestrator watches for Issue Type `Feature` + `Phase: Execution` + `Status:
-Ready` and treats it as "this Feature is fully broken down, go execute it end to end" (reading
-its sub-issues and working through them in order). Setting that orchestrator's own "I've claimed
-this" lock (e.g. flipping `Status` to `In progress` once it starts) is entirely that future
-skill's responsibility, not this one's — this skill's job ends at handing off a clean, complete
-signal, not at managing what happens after.
+This is the one signal this skill hands off to whatever picks up next — `/execute-feature`
+watches for Issue Type `Feature` + `Phase: Execution` + `Status: Ready` and treats it as "this
+Feature is fully broken down, go execute it end to end" (reading its sub-issues and working
+through them in dependency order). Setting that orchestrator's own "I've claimed this" lock
+(flipping `Status` to `In progress` once it starts) is entirely `/execute-feature`'s
+responsibility, not this one's — this skill's job ends at handing off a clean, complete signal,
+not at managing what happens after.
 
 ---
 

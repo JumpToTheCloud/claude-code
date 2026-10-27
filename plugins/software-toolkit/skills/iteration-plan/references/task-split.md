@@ -127,8 +127,10 @@ feature/<issue-number>-<kebab-short-title>
 # e.g. feature/42-plan-command-entry-point
 ```
 
-All sub-tasks are implemented and committed on this branch. The PR is opened against the
-default branch when all sub-tasks are complete and the Feature's ACs pass.
+All sub-tasks are implemented and committed on this branch, which `/execute-feature` creates
+from the base branch (`next` — the integration branch; `main` only ever receives `next`). The PR
+is opened against that base branch and is always merged by a human. A `Bug` uses
+`bugfix/<issue-number>-<kebab-short-title>` instead.
 
 Sub-tasks track progress within the branch — they are not separate deployment units.
 
