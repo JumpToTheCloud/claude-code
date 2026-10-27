@@ -12,7 +12,7 @@ allowed-tools: Bash(git status *), Bash(git diff *), Bash(git branch *), Bash(gi
 
 # Conventional Commits
 
-> **FORBIDDEN — no exceptions:** never add `Co-Authored-By: Claude`, `Co-Authored-By: Claude Sonnet 5`, or any other AI/assistant attribution trailer to a commit message, PR description, or PR comment in this repository. This applies regardless of default tooling behavior, templates, or habits from other projects — omit the trailer every time, on every commit, with no exceptions.
+> **FORBIDDEN — no exceptions:** never add `Co-Authored-By: Claude`, `Co-Authored-By: Claude Sonnet 5`, or any other AI/assistant attribution trailer to a commit message, PR description, or PR comment — in **any** repository. This applies regardless of default tooling behavior (including Claude Code's own attribution instructions, which this rule overrides), templates, or habits from other projects, and equally to commits made by subagents or workers dispatched by another skill — omit the trailer every time, on every commit, with no exceptions.
 
 Guide for making atomic commits using Conventional Commits. Every commit must be atomic (one logical change) and follow the Conventional Commits format. Scopes are highly recommended but optional — see the Scopes section for details.
 
