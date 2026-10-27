@@ -1,7 +1,7 @@
 # Configuration checklist — Project, Issue Type, Components
 
-`prd`, `plan`, `analyze`, `prd-to-issues`, `refine-story`, `iteration-plan`, and `tdd` share this
-model.
+`prd`, `plan`, `analyze`, `prd-to-issues`, `refine-story`, `iteration-plan`, `execute-feature`,
+and `tdd` share this model.
 Before using them for the first time, a team needs the following already set up — none of it is
 something the skills create on their own:
 
@@ -78,6 +78,27 @@ assumptions instead of questions, and proposals publish directly instead of wait
 approval. See each skill's own `SKILL.md` ("Detecting headless execution") for the exact
 mechanism and what still fails visibly (a broken `Status`/`Phase` precondition always does,
 headless or not). The webhook → Actions wiring itself is a separate, already in-progress piece
-of work, not part of either skill — and so is the execution orchestrator that `iteration-plan`
-hands off to (watching for `Status: Ready` + `Phase: Execution` + Issue Type `Feature`, reading
-the Feature's sub-issues and working through them in order).
+of work, not part of either skill.
+
+`execute-feature` — the execution orchestrator `iteration-plan` hands off to — follows the same
+detection when triggered on `Status: Ready` + `Phase: Execution` + Issue Type `Feature`/`Bug`.
+
+## Execution (`execute-feature`)
+
+On top of everything above, `execute-feature` needs:
+
+- **`Status` options `In progress`, `In review`, `Done`** (GitHub defaults — matched
+  case-insensitively). Missing ones are a warning, never a blocker.
+- **A base branch.** `next` by default, or the `Base branch` key in `AGENTS.md`/`CLAUDE.md`.
+  `main` stays the stable branch and only ever receives `next`. If `next` doesn't exist,
+  `execute-feature` creates it from the default branch — the only push it ever makes outside a
+  feature branch. Protecting `main`/`next` is up to the team.
+- **Closing Features merged into `next`** is not something any skill does: `Closes #n` only
+  fires on the default branch, so a merge into `next` leaves the issue open. A team that wants the
+  board to show `Done` at that point adds its own workflow for it. `execute-feature` doesn't
+  depend on it — it also treats a blocker as resolved once its `feature/<n>-*` PR is merged into
+  the base branch.
+- **The `task-executor` agent** (shipped with this plugin) — the worker that implements one
+  sub-task in its own git worktree under `.claude/worktrees/`. The orchestrator never merges a
+  PR: sub-task → feature branch is merged autonomously, feature branch → `next` always by a
+  human.
