@@ -1,14 +1,16 @@
 # Configuration checklist — Project, Issue Type, Components
 
 `prd`, `plan`, `analyze`, `prd-to-issues`, `refine-story`, `iteration-plan`, `execute-feature`,
-and `tdd` share this model.
+`complete-feature`, `report-bug` and `tdd` share this model.
 Before using them for the first time, a team needs the following already set up — none of it is
 something the skills create on their own:
 
-1. **Issue Types "PRD", "Feature", and "Task"** — created at the organization level (Settings →
-   Issue types). Issue Types require an organization; a personal-account owner has no Issue
-   Types, and `prd`/`prd-to-issues`/`iteration-plan` fall back to a `prd`/`feature`/`task` label
-   respectively in that case.
+1. **Issue Types "PRD", "Feature", "Bug", and "Task"** — created at the organization level
+   (Settings → Issue types). Issue Types require an organization; a personal-account owner has
+   no Issue Types, and `prd`/`prd-to-issues`/`report-bug`/`iteration-plan` fall back to a
+   `prd`/`feature`/`bug`/`task` label respectively in that case. A `Bug` (filed by `report-bug`)
+   goes through the same `refine-story` → `iteration-plan` → `execute-feature` →
+   `complete-feature` flow as a Feature.
 2. **A shared GitHub Project (v2)** with these single-select/number custom fields:
    - `Component` — one option per repo these skills create issues into (e.g. `FACTORY CLUSTER`,
      `FACTORY DISPATCHER`).
@@ -26,7 +28,10 @@ something the skills create on their own:
      respectively as a PRD/Feature moves through Discovery; `iteration-plan` also reuses
      `Planning` while it's actively breaking a Feature down. `prd`/`plan`/`analyze`/
      `refine-story` treat a missing Status option as best-effort (warn, don't block); only
-     `prd-to-issues` treats a missing `Component`/`Phase` option as a hard stop.
+     `prd-to-issues` treats a missing `Component`/`Phase` option as a hard stop. Execution needs
+     one more option after `Done`: `Released`. `Done` + `Execution` means "merged into the base
+     branch" (set by `complete-feature`; dependents are unblocked); `Released` means "shipped
+     and validated" — see "Release and release-candidate bugs" below.
    - `Size` (single-select, `XS`–`XL`) and `Estimate` (number, Story Points) — set by
      `refine-story` on the Feature. `iteration-plan` reads both but never writes `Estimate` (its
      own sub-task hour estimates live in the issue body text, not this field, to avoid mixing
@@ -82,6 +87,10 @@ of work, not part of either skill.
 
 `execute-feature` — the execution orchestrator `iteration-plan` hands off to — follows the same
 detection when triggered on `Status: Ready` + `Phase: Execution` + Issue Type `Feature`/`Bug`.
+`complete-feature` follows it too, triggered on a different kind of event: a PR merged into the
+base branch (the job passes the PR number). So does `report-bug`, which has no board trigger of
+its own: a job (or `execute-feature`'s final review, for faults outside the Feature's diff)
+calls it with the fault and its origin as arguments.
 
 ## Execution (`execute-feature`)
 
@@ -93,12 +102,38 @@ On top of everything above, `execute-feature` needs:
   `main` stays the stable branch and only ever receives `next`. If `next` doesn't exist,
   `execute-feature` creates it from the default branch — the only push it ever makes outside a
   feature branch. Protecting `main`/`next` is up to the team.
-- **Closing Features merged into `next`** is not something any skill does: `Closes #n` only
-  fires on the default branch, so a merge into `next` leaves the issue open. A team that wants the
-  board to show `Done` at that point adds its own workflow for it. `execute-feature` doesn't
-  depend on it — it also treats a blocker as resolved once its `feature/<n>-*` PR is merged into
-  the base branch.
+- **Features merged into `next`**: `Closes #n` only fires on the default branch, so a merge into
+  `next` leaves the issue open. `complete-feature` moves it to `Status: Done` (run by hand, or by
+  the job on the PR merged event) and leaves it open until it is `Released`. `execute-feature`
+  doesn't depend on that having run — it also treats a blocker as resolved once its
+  `feature/<n>-*` PR is merged into the base branch.
 - **The `task-executor` agent** (shipped with this plugin) — the worker that implements one
   sub-task in its own git worktree under `.claude/worktrees/`. The orchestrator never merges a
   PR: sub-task → feature branch is merged autonomously, feature branch → `next` always by a
   human.
+
+## Release and release-candidate bugs
+
+`Done` and `Released` are two different points in a Feature's life, on purpose:
+
+- **`Done`** — merged into the base branch (`complete-feature`). The Feature still counts as a
+  **resolved blocker**: every Feature that depends on it can be executed. The issue stays open.
+- **`Released`** — shipped and validated. Only then is the issue closed.
+
+Bugs are filed with `report-bug`. How a Bug relates to the issue that introduced it (its
+**origin**) depends on where it was found:
+
+- **In review or during execution** — the origin's own work is finished, so it is **never
+  blocked**: it keeps moving `In review` → `Done`. The Bug records it under `## Origin` and
+  comments on it. Whatever can't proceed without the fix is blocked explicitly (`--blocks`).
+- **In a release candidate** (`report-bug --found-in <rc>`) — a release candidate is built from
+  `next` and deployed; a fault there means the origin, already `Done`, must not be `Released`.
+  The Bug is then also set as a native blocker (`blockedBy`) of the origin. Dependents stay
+  unblocked — the origin is still `Done` — but it can't move to `Released` while any of its
+  blockers is open.
+
+Either way the origin's `Status` and state are never touched. The Bug runs on a `bugfix/<n>-*`
+branch; a `Done` Feature is never executed again.
+
+Moving Features to `Released` is not automated by any skill yet — until it is, it's done by
+hand, checking that the Feature has no open blocker.
