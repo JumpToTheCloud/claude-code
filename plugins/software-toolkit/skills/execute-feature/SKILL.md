@@ -50,8 +50,10 @@ With an issue number: go to Step 1.
 **Without one** (interactive only — headless, fail visibly: a scheduled run must name the
 Feature): list every Project item with Issue Type `Feature`/`Bug`, `Phase: Execution` and
 `Status: Ready` (see `references/github.md` — "Listing executable Features"), run Steps 1–3 on
-each read-only, and keep those whose blockers are resolved. Show them and ask which to run (all
-by default). Then run Steps 4–10 for all chosen Features through **one global scheduler**: each
+each read-only, and keep those whose blockers are resolved. A Feature with nothing executable
+without a human (Step 3 — "Nothing executable") is not offered: list it apart as "waiting on a
+human", with its actionable `hitl` sub-tasks. Show the rest and ask which to run (all by
+default). Then run Steps 4–10 for all chosen Features through **one global scheduler**: each
 Feature keeps its own branch, integration worktree and PR, but the worker limit (3) is shared
 across all of them. Never dispatch one orchestrator per Feature.
 
@@ -112,6 +114,20 @@ sub-task exactly as `references/scheduling.md` ("Building the tree") describes:
 A sub-task with neither `afk` nor `hitl`, or with both, is treated as `hitl` (needs a human to
 classify it). If the Feature has **no** sub-issues → hard stop: "nothing to execute — run
 `/iteration-plan`". Detect cycles; if any, hard stop and name the cycle (never guess an order).
+
+**Nothing executable** — on a fresh run (`Status: Ready`), if there is open work but no sub-task
+is `eligible` (every open AFK sub-task is `skipped` behind a `hitl` one, or only `hitl` ones are
+left), stop here, **before claiming anything**:
+- no `Status` change — the Feature stays `Ready`; no branch, no worktree, no PR;
+- post the `hitl` comment (Step 8) on every **actionable** `hitl` sub-task — open, every blocker
+  `done`, so a human can do it now — and on no other;
+- report: _"#<n>: nothing executable without a human. Pending: #<a> (HITL)[, #<b> (HITL)]. Once
+  closed, run `/execute-feature <n>` again."_ plus the tree table (Step 4) so it's clear what
+  waits on what.
+
+This is a successful outcome, not a failure — headless, exit without error. A **resume**
+(`Status: In progress`) with nothing eligible goes on to Step 8 and Step 10 as usual, since the
+claim, branch and PR already exist.
 
 Also resolve the repo's quality-gate commands now (`references/scheduling.md` — "Quality gate").
 The current working directory must be a checkout of the Feature's repo — otherwise stop (headless:
@@ -191,9 +207,12 @@ Serial, in the feature's integration worktree (`references/scheduling.md` — "I
 
 ## Step 8 — HITL, blocked and skipped sub-tasks
 
-- **hitl**: post `assets/comment-hitl.md` once per run (skip if this run's marker is already there
-  from a previous run with nothing changed): what a human must decide or do, taken from the
-  sub-task's `Mode: HITL` section, and which AFK sub-tasks wait on it. Never change its labels or
+- **hitl**: post `assets/comment-hitl.md` on each **actionable** one only — open with every
+  blocker `done`, so a human can act on it now (skip if its marker is already there from a
+  previous run with nothing changed): what a human must decide or do, taken from the sub-task's
+  `Mode: HITL` section, and which AFK sub-tasks wait on it, directly or through other sub-tasks.
+  A `hitl` sub-task still waiting on another gets no comment yet — it's listed in the report and
+  PR body with what it waits on, and gets its comment on the run where it becomes actionable. Never change its labels or
   `Status`, never close it — a human closes it when done, and the next run picks up its
   dependents.
 - **blocked** (failed twice): nothing of it is integrated. Post `assets/comment-blocked.md` — what
@@ -248,6 +267,9 @@ final `Status`, and any warning (no `Base branch` declared, `next` created, miss
   branch → base branch is a PR merged by a human. Never merge, approve or close a PR; never close
   the Feature; never push to `main`/the base branch except to create a missing `next`.
 - Never execute a `hitl` sub-task, and never execute anything transitively blocked by one.
+- Nothing `eligible` on a fresh run → never claim the Feature: it stays `Ready`, only the
+  actionable `hitl` sub-tasks get a comment, and the run ends successfully with what a human has
+  to do first. The Feature's own `afk`/`hitl` label decides nothing — only the sub-task tree does.
 - Never integrate red code: the full quality gate passes on the feature branch after every
   integration, or that integration is undone locally before anything is pushed.
 - One retry per sub-task per run, then block and move on — the rest of the tree keeps going.

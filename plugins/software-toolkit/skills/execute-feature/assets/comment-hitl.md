@@ -1,6 +1,7 @@
 # Comment template — human needed
 
-Posted once on each open HITL sub-task that the run reaches. Never relabel, move or close it.
+Posted once on each **actionable** HITL sub-task — open, every blocker done — never on one still
+waiting on another sub-task. Never relabel, move or close it.
 
 ---
 
@@ -11,7 +12,8 @@ Posted once on each open HITL sub-task that the run reaches. Never relabel, move
 <from the body's "Mode: HITL" section — the decision, provisioning or sign-off expected>
 
 ### Waiting on this
-<#x, #y — AFK sub-tasks that start once this is closed — or "Nothing">
+<#x, #y — AFK sub-tasks that wait on this, directly or through other sub-tasks (say which:
+"#16, after #13") — or "Nothing">
 
 Close this sub-task when it's done; the next `/execute-feature <feature>` run picks up what
 depends on it.

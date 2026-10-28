@@ -20,6 +20,11 @@ Labels lowercased first.
      anywhere among its transitive blockers.
    - `eligible` — open `afk`, every blocker `done` (cross-Feature blockers: closed only).
    - `waiting` — every other open `afk` sub-task.
+
+   A `hitl` sub-task is **actionable** when every one of its blockers is `done` — a human can
+   do it now. Only actionable ones get the hitl comment (`SKILL.md` Step 8). No `eligible`
+   sub-task on a fresh run → the run stops before claiming (`SKILL.md` Step 3 — "Nothing
+   executable").
 3. Re-run classification after every integration and every block. `waiting` → `eligible` as
    blockers close; `waiting` → `skipped` when a blocker gets blocked.
 
