@@ -11,8 +11,8 @@ Closes #<feature>
 
 > ⚠️ Merge keeping the commits (rebase or merge commit), **not squash**: every commit is a
 > Conventional Commit tied to its sub-task (`Refs #<sub-task>`), which the changelog relies on.
-> `Closes` only fires on the default branch — merging into `<base>` leaves #<feature> open until
-> it is closed by the board automation or by hand.
+> `Closes` only fires on the default branch — merging into `<base>` leaves #<feature> open:
+> `/complete-feature` moves it to `Done` on merge, and it is closed once released.
 
 ## Sub-tasks
 - [x] #7 Implement WebhookSignatureVerifier

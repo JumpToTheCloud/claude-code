@@ -38,7 +38,8 @@ dependency tree, worktrees, quality gate, integration and resume rules.
 This skill **never** merges, approves or closes a PR, never closes the Feature issue, and never
 pushes to `main` or the base branch — the one exception being creating `next` when it doesn't
 exist yet (Step 5). Not headless, not in batch mode, not ever. Its job ends at a PR ready for
-review, the Feature at `Status: In review`, and a report.
+review, the Feature at `Status: In review`, and a report. Once a human merges the PR,
+`/complete-feature` moves the Feature to `Done` — never this skill.
 
 ---
 
@@ -72,7 +73,8 @@ across all of them. Never dispatch one orchestrator per Feature.
      `/iteration-plan` first".
    - `Status: Ready` → fresh run. `Status: In progress` → **resume** (interactive only, and only
      with an explicit number; headless treats it as "already claimed" and stops visibly, so two
-     runs never execute the same Feature). Anything else (`In review`, `Done`, …) → hard stop.
+     runs never execute the same Feature). Anything else (`In review`, `Done`, `Released`, …) →
+     hard stop. A fix to a `Done` Feature is a separate `Bug` issue, never a re-run.
 
 The gate never becomes a "proceed anyway?" question.
 
@@ -223,6 +225,8 @@ If nothing was integrated in the whole run (everything `hitl`/blocked), no PR is
    `task-executor` run, integrated like any other (Step 7); leave judgement calls as a list in the
    PR body for the human reviewer. Review unavailable → note it, never block on it.
 2. Mark the PR ready for review (`gh pr ready`), set the Feature's `Status` to `In review`.
+   That's this skill's last `Status` write on the Feature: after a human merges the PR,
+   `/complete-feature` sets `Done` (run by hand, or by the job on the PR merged event).
 
 **Something still open** (`hitl`, blocked, skipped): PR stays draft, Feature stays
 `In progress`. Re-running `/execute-feature <n>` resumes (see `references/scheduling.md` —

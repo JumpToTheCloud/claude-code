@@ -103,7 +103,9 @@ gh project item-edit --project-id <project-node-id> --id <item-id> \
 Options used: `In progress` (Feature on claim; sub-task on start), `Done` (sub-task on
 integration), `Ready` (blocked sub-task, reset), `In review` (Feature at the end). Best-effort,
 same as the rest of the pipeline: a missing option is a warning in the report, never a blocker.
-Never touch `Phase` — everything here already is `Execution`.
+Never touch `Phase` — everything here already is `Execution`. `Done` and `Released` on the
+**Feature** belong to other skills (`/complete-feature` sets `Done` after the PR is merged) —
+never set them here.
 
 ## Comments and closing
 
