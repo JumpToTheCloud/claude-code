@@ -10,6 +10,9 @@ only covers what's specific to `iteration-plan`.
 gh issue view <number> --json title,body,comments,id,repository
 ```
 
+Its Issue Type for the Step 1 gate (`gh issue view` doesn't return it) — same one-field GraphQL
+query as `refine-story/references/github.md` ("Fetching the Feature").
+
 Then its Project item and `Status` (see `prd-to-issues/references/github.md` — "Finding a
 Project item for an existing issue"), and its `Size`/`Estimate`/`Milestone` values — needed for
 Step 9's threshold check and for assigning sub-tasks to the same Milestone.
@@ -109,7 +112,8 @@ $tddLabelId]` / `-f tddLabelId="<tdd-label-node-id>"`) — never add it for any 
 
 `milestoneId` is the **same Milestone the parent Feature already belongs to** — fetch it from
 the Feature's own issue data (`gh issue view <feature-number> --json milestone`) rather than
-re-resolving or creating a new one.
+re-resolving or creating a new one. A Bug may have no Milestone: then drop `$milestoneId` and
+the `milestoneId` field from the mutation — never create one for it.
 
 Then set `Component`/`Phase`/`Status` on the Project item the same `gh project item-edit`
 pattern `prd-to-issues` uses for its implementation issues — but with different values here:

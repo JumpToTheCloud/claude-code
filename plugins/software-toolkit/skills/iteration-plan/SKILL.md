@@ -1,6 +1,6 @@
 ---
 name: iteration-plan
-description: Break a refined GitHub Feature (Status Ready + Phase Discovery, already processed by /refine-story) into technical sub-tasks — codebase analysis, TDD/branching decisions, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels — then moves the Feature itself to Status Ready + Phase Execution, the signal a separate execution orchestrator picks up to run the whole Feature. Use whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also runs unattended inside a GitHub Actions job (no human present) when a Feature reaches that Status+Phase combination — trigger on "/iteration-plan", "iteration plan issue #N", "split this feature into tasks", "break down this feature", or any variation of turning a ready Feature into implementation sub-tasks.
+description: Break a refined GitHub Feature or Bug (Status Ready + Phase Discovery, already processed by /refine-story) into technical sub-tasks — codebase analysis, TDD/branching decisions, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels — then moves the Feature itself to Status Ready + Phase Execution, the signal a separate execution orchestrator picks up to run the whole Feature. Use whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also runs unattended inside a GitHub Actions job (no human present) when a Feature reaches that Status+Phase combination — trigger on "/iteration-plan", "iteration plan issue #N", "split this feature into tasks", "break down this feature", or any variation of turning a ready Feature into implementation sub-tasks.
 context: fork
 agent: iteration-plan
 background: false
@@ -15,9 +15,13 @@ of the Feature with native dependencies between them. Once every sub-task exists
 moves the Feature itself to `Status: Ready` + `Phase: Execution` — the same `Status` value as
 before, but a different `Phase` entirely changes what it means: the execution orchestrator,
 `/execute-feature`, treats *that* specific combination (`Ready` + `Execution` + Issue Type
-`Feature`) as "pick up this whole Feature and execute it" — it reads the Feature's sub-issues
+`Feature` or `Bug`) as "pick up this whole Feature and execute it" — it reads the Feature's sub-issues
 and works through them in dependency order, rather than anything in this skill dispatching
 per-sub-task work itself.
+
+A `Bug` (filed by `/report-bug`, refined by `/refine-story`) goes through this skill exactly
+like a Feature — everything below says "Feature" and applies to both, except where a step says
+otherwise (context from `## Origin` instead of a parent PRD, Step 2; `bugfix/` branch, Step 4).
 
 This skill runs in an isolated `iteration-plan` subagent with no visibility into the
 conversation that triggered it — the Feature issue number (or none, to search for Ready
@@ -52,6 +56,9 @@ combination other than `Ready`+`Discovery` is a hard stop, human or headless, no
 anyway?" question: report "cannot plan — not `Ready`/`Discovery`" and stop — this Feature either
 hasn't finished `/refine-story` yet, or has already been broken down.
 
+The Issue Type must be `Feature` or `Bug` (the `feature`/`bug` label on a personal-account
+Project) — anything else is a hard stop too: "cannot plan — not a Feature or Bug".
+
 Set `Status = Planning` immediately once the gate passes (best-effort — missing option = warn
 and skip, never block) — same pattern `/refine-story` uses for `Refining`, so the board shows
 something is actively working on this Feature's breakdown.
@@ -62,7 +69,9 @@ something is actively working on this Feature's breakdown.
 
 Same pattern as `refine-story` Step 2: the Feature's own (already-refined) body, the parent
 PRD's Success Criteria, and this issue's native blockers via `Issue.blockedBy` (see
-`references/github.md`).
+`references/github.md`). For a `Bug`, the parent PRD's place is taken by the issue and PR named
+in its `## Origin` — and its Steps to reproduce / Affected files are where Step 3's analysis
+starts. Its regression-test AC must land in a sub-task like any other AC (Step 8).
 
 ---
 
@@ -90,8 +99,9 @@ is judged separately, per sub-task, in Step 5 — not here):
   and record it as a named assumption. E2E testing is out of scope for this skill for now — don't
   ask about it, and don't fold it into this question; if a Feature clearly needs e2e coverage,
   note the gap in Step 9's report instead.
-- **Branch name**: always `feature/<issue-number>-<kebab-title>` — this never depends on
-  anything ambiguous, so never ask, human or headless.
+- **Branch name**: `feature/<issue-number>-<kebab-title>` for a Feature,
+  `bugfix/<issue-number>-<kebab-title>` for a Bug — this never depends on anything ambiguous,
+  so never ask, human or headless.
 
 ---
 
@@ -163,7 +173,7 @@ Only once every sub-task above was created and linked successfully (never on a p
 failure — see above): move the parent Feature itself to `Status = Ready` + `Phase = Execution`.
 
 This is the one signal this skill hands off to whatever picks up next — `/execute-feature`
-watches for Issue Type `Feature` + `Phase: Execution` + `Status: Ready` and treats it as "this
+watches for Issue Type `Feature` or `Bug` + `Phase: Execution` + `Status: Ready` and treats it as "this
 Feature is fully broken down, go execute it end to end" (reading its sub-issues and working
 through them in dependency order). Setting that orchestrator's own "I've claimed this" lock
 (flipping `Status` to `In progress` once it starts) is entirely `/execute-feature`'s
@@ -230,6 +240,7 @@ something this skill does yet.
   never inherited `Discovery`. The parent Feature only reaches `Phase: Execution` itself once
   every sub-task exists (Step 7b) — don't flip the Feature's `Phase` early, and don't leave
   sub-tasks behind at `Discovery` once it does.
+- This skill only ever runs on Issue Type `Feature` or `Bug`.
 - This skill only ever runs on `Status: Ready` + `Phase: Discovery` together — checking `Status`
   alone is not enough, since the same `Status: Ready` value means something entirely different
   once `Phase` is `Execution` (reserved for the execution orchestrator, not this skill).

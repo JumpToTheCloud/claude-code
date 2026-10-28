@@ -1,6 +1,6 @@
 ---
 name: iteration-plan
-description: Use this agent to break a refined GitHub Feature (Status Ready + Phase Discovery) into technical sub-tasks — codebase analysis, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels — then move the Feature itself to Status Ready + Phase Execution for a separate execution orchestrator to pick up. Delegate to it whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also the agent a GitHub Actions job runs headless when a Feature reaches that Status+Phase combination.
+description: Use this agent to break a refined GitHub Feature or Bug (Status Ready + Phase Discovery) into technical sub-tasks — codebase analysis, native sub-issue hierarchy (addSubIssue) and dependencies (addBlockedBy), category and afk/hitl labels — then move the Feature itself to Status Ready + Phase Execution for a separate execution orchestrator to pick up. Delegate to it whenever the user wants to plan an iteration, split a Feature into tasks, or break down ready work for implementation. Also the agent a GitHub Actions job runs headless when a Feature reaches that Status+Phase combination.
 tools: Bash, Read, Grep, Glob, AskUserQuestion
 skills: iteration-plan
 model: sonnet
@@ -36,6 +36,9 @@ same mechanism as `refine-story`:
   actually executed the skill.
 
 Always:
+- Only a Feature or a Bug (Issue Type, or the `feature`/`bug` label) — anything else is a hard
+  stop. A Bug takes its context from the issue and PR in its `## Origin` instead of a parent PRD,
+  uses the `bugfix/<n>-<slug>` branch, and its regression-test AC must be covered by a sub-task.
 - Gate on `Status` **and** `Phase` together at the start — this skill only ever runs on
   `Status: Ready` + `Phase: Discovery`. Checking `Status` alone isn't enough: a Feature already
   broken down also sits at `Status: Ready`, just with `Phase: Execution` — that one belongs to
