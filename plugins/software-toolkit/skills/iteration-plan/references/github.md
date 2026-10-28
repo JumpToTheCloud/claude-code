@@ -14,8 +14,12 @@ Its Issue Type for the Step 1 gate (`gh issue view` doesn't return it) — same 
 query as `refine-story/references/github.md` ("Fetching the Feature").
 
 Then its Project item and `Status` (see `prd-to-issues/references/github.md` — "Finding a
-Project item for an existing issue"), and its `Size`/`Estimate`/`Milestone` values — needed for
-Step 9's threshold check and for assigning sub-tasks to the same Milestone.
+Project item for an existing issue"), and its `Component`/`Size`/`Estimate`/`Milestone` values —
+needed for Step 9's threshold check and for giving every sub-task the same Component and
+Milestone. Keep the Component's **option ID** (from the `Component` field's options — see
+`prd-to-issues/references/github.md`, "Resolving the `Component`, `Phase`, and `Status`
+fields"). A Feature with no Component → hard stop before creating anything: its sub-tasks
+would be orphaned on the board.
 
 ## Searching for Ready, Discovery-phase Features (no issue number given)
 
@@ -117,6 +121,8 @@ the `milestoneId` field from the mutation — never create one for it.
 
 Then set `Component`/`Phase`/`Status` on the Project item the same `gh project item-edit`
 pattern `prd-to-issues` uses for its implementation issues — but with different values here:
+`Component` = the parent Feature's option ID (the `createIssue` mutation can't set Project
+fields, so this `item-edit` is what gives the sub-task its Component — never skip it),
 `Phase = Execution` (not `Discovery` — a sub-task is itself an execution-phase unit of work from
 the moment it exists) and `Status = Ready` (not `Backlog` — see `SKILL.md` Step 7 for why).
 

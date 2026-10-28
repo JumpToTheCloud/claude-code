@@ -58,8 +58,9 @@ Always:
   never inherited `Discovery`) — each one is already fully self-contained by the task template,
   so there's no separate "refine a sub-task" step for anything to wait on.
 - Every sub-task is linked as a native GitHub sub-issue of the parent Feature (`addSubIssue`),
-  never just text-referenced, and added to the same Project and the same Milestone as the parent
-  Feature.
+  never just text-referenced, and added to the same Project, the same Milestone and the same
+  `Component` as the parent Feature — the Component is set on every sub-task's Project item,
+  never left empty.
 - Once every sub-task is created and linked successfully — never on a partial failure — move
   the parent Feature itself to `Status: Ready` + `Phase: Execution`. That exact combination is
   the complete, clean signal this skill hands off; anything beyond that (the execution

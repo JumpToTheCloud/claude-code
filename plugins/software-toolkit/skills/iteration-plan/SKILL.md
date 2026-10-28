@@ -148,7 +148,8 @@ same requirement `prd-to-issues` has):
    from Step 3.
 2. Create the issue in the Feature's own repo, Issue Type `Task`, with the category label, the
    `afk`/`hitl` label, and the `tdd` label if Step 5 marked it, added to the same Project and the
-   same Milestone as the parent Feature, `Status = Ready`, `Phase = Execution` — one combined
+   same Milestone as the parent Feature, `Component` = the parent Feature's (always set, never
+   left empty), `Status = Ready`, `Phase = Execution` — one combined
    `createIssue` mutation, same pattern `prd-to-issues` uses. Sub-tasks are born `Ready`, not
    `Backlog`: the task template already makes each one fully self-contained (interface
    contracts, phases, pattern to follow, ACs covered), so there's no separate "refine a
@@ -236,6 +237,7 @@ something this skill does yet.
   at that point — don't mark one `tdd` without that genuinely being true.
 - Sub-tasks are always native GitHub sub-issues (`addSubIssue`) of the parent Feature — never
   just text-referenced.
+- Every sub-task gets the parent Feature's `Component` on its Project item — never left empty.
 - Every sub-task is created at `Status: Ready` + `Phase: Execution` directly — never `Backlog`,
   never inherited `Discovery`. The parent Feature only reaches `Phase: Execution` itself once
   every sub-task exists (Step 7b) — don't flip the Feature's `Phase` early, and don't leave
