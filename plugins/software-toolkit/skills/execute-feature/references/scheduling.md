@@ -189,13 +189,22 @@ integrated and pushed — never per sub-task, never inside a task worktree, neve
 Invoke the `code-review` skill at `medium` effort with the **feature branch** as its target
 (`<feature-branch>`, reviewed against the base branch) — not the PR number, which makes it fetch
 the PR into an extra local `pr-<number>` branch. Review only — no `--fix`, no `--comment`;
-findings come back in-session. Split the findings:
+findings come back in-session. First separate the findings **outside the diff** — in code the
+feature branch didn't change (`git diff --name-only origin/<base>...<feature-branch>`, plus the
+changed hunks for a file that is in it). Then split the findings:
+- **report** — out-of-diff faults that are real defects (not style or taste): not this Feature's
+  to fix, so neither applied nor left as a note. File each with the `report-bug` skill —
+  `--origin #<feature> --pr <pr>`, the finding as the description, no `--blocks`, never
+  `--found-in` — headless-safe, it never asks when the run is headless. Its duplicate check
+  keeps a resumed run from filing the same Bug twice. The Bugs never block this Feature: they're
+  listed in the PR body under "Bugs reported". A `report-bug` failure → move the finding to
+  **leave**, never block on it.
 - **apply** — clear correctness bugs and mechanical cleanups with an obvious fix: dispatch one
   `task-executor` with them as its "sub-task body" (Approach: "apply these review fixes, nothing
   else"; footer `Refs #<feature>`), integrate it like any sub-task — but no issue comments, it's
   reported in the PR body instead.
-- **leave** — anything needing judgement: listed in the PR body under "Review notes" for the
-  human reviewer.
+- **leave** — anything needing judgement, and out-of-diff findings that aren't defects: listed
+  in the PR body under "Review notes" for the human reviewer.
 
 If the review or the fix run fails, note it in the PR body and still mark the PR ready — the
 human review is the real gate.

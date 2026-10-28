@@ -24,6 +24,10 @@ Closes #<feature>
 <final review: fixes applied (commit), and judgement calls left for the reviewer — omit until the
 final review ran>
 
+## Bugs reported
+<out-of-diff defects the final review found, filed with `report-bug` — one line each:
+`- #<bug> <title> — <file>`; omit when none>
+
 ## Warnings
 <only if any: base branch `next` was created by this run; no `Base branch` declared in AGENTS.md
 (using `next`); a `Status` option missing on the board; no automated quality gate found>

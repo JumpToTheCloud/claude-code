@@ -223,7 +223,10 @@ If nothing was integrated in the whole run (everything `hitl`/blocked), no PR is
    integrated into the feature branch: the built-in `code-review` skill targeting the feature
    branch (`references/scheduling.md` — "Final review"). Feed the obvious, low-risk findings to one more
    `task-executor` run, integrated like any other (Step 7); leave judgement calls as a list in the
-   PR body for the human reviewer. Review unavailable → note it, never block on it.
+   PR body for the human reviewer. Findings in code outside the feature branch's diff are filed
+   as Bugs with the `report-bug` skill (origin this Feature, never blocking it) and listed in the
+   PR body (`references/scheduling.md` — "Final review"). Review unavailable → note it, never
+   block on it.
 2. Mark the PR ready for review (`gh pr ready`), set the Feature's `Status` to `In review`.
    That's this skill's last `Status` write on the Feature: after a human merges the PR,
    `/complete-feature` sets `Done` (run by hand, or by the job on the PR merged event).
