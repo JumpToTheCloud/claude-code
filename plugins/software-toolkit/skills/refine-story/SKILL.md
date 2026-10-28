@@ -1,6 +1,6 @@
 ---
 name: refine-story
-description: Refine a GitHub Feature issue (created by /prd-to-issues) into something ready to implement — full FR/NFR extraction, enriched Acceptance Criteria, Size/Estimate/Priority fields set, named assumptions instead of open questions. Moves Status from Backlog through Refining to Ready. Given an issue number, refines that one Feature; given none, refines every Feature currently in Backlog across the shared Project by dispatching one subagent per issue in parallel. Use whenever the user wants to refine a Feature, flesh out an issue before implementation, refine the whole backlog at once, or get a Feature ready for /iteration-plan. Also runs unattended inside a GitHub Actions job (no human present) when Status changes to Refining — trigger on "/refine-story", "refine issue #N", "refine this feature", "refine the backlog", "refine everything in backlog", "get this issue ready", or any variation of preparing one or more implementation issues for work.
+description: Refine a GitHub Feature issue (created by /prd-to-issues) or Bug issue (created by /report-bug) into something ready to implement — full FR/NFR extraction, enriched Acceptance Criteria, Size/Estimate/Priority fields set, named assumptions instead of open questions. Moves Status from Backlog through Refining to Ready. Given an issue number, refines that one Feature; given none, refines every Feature and Bug currently in Backlog across the shared Project by dispatching one subagent per issue in parallel. Use whenever the user wants to refine a Feature, flesh out an issue before implementation, refine the whole backlog at once, or get a Feature ready for /iteration-plan. Also runs unattended inside a GitHub Actions job (no human present) when Status changes to Refining — trigger on "/refine-story", "refine issue #N", "refine this feature", "refine the backlog", "refine everything in backlog", "get this issue ready", or any variation of preparing one or more implementation issues for work.
 context: fork
 agent: refine-story
 background: false
@@ -9,14 +9,17 @@ allowed-tools: Bash(gh issue *), Bash(gh api *), Bash(gh project *), Bash(gh rep
 
 # /refine-story — Refine a Feature
 
-Take a GitHub Feature issue (created by `/prd-to-issues`, `Status: Backlog`) and refine it into
-something a developer or AFK agent can implement without further clarification: full FR/NFR
+Take a GitHub Feature issue (created by `/prd-to-issues`, `Status: Backlog`) — or a `Bug`
+(created by `/report-bug`, same `Status`) — and refine it into something a developer or AFK agent can implement without further clarification: full FR/NFR
 coverage, enriched Acceptance Criteria, and `Size`/`Estimate`/`Priority` set on the Project.
 Moves `Status` from `Backlog` → `Refining` → `Ready` (or leaves it at `Refining` with a comment
 explaining what's missing).
 
 Given an issue number, this refines that one Feature. Given no issue number, it instead refines
-**every** Feature currently in `Backlog` across the shared Project — see Step 0.
+**every** Feature and Bug currently in `Backlog` across the shared Project — see Step 0.
+
+Everything below says "Feature"; it applies to a `Bug` identically, except where a step says
+otherwise (a Bug has an `## Origin` instead of a parent PRD — Step 2).
 
 This skill runs in an isolated `refine-story` subagent with no visibility into the conversation
 that triggered it — the Feature issue number (or nothing, for the whole-backlog case) arrives as
@@ -75,10 +78,10 @@ Feature's refinement isolated, don't let fifteen Features' worth of context pile
 
 1. Resolve the Project (`GitHub Project`/`GitHub Project Owner`) exactly as
    `prd-to-issues/references/github.md` ("Resolving the shared Project") describes.
-2. List every Project item with `Status: Backlog` **and** Issue Type `Feature` — see
+2. List every Project item with `Status: Backlog` **and** Issue Type `Feature` or `Bug` — see
    `references/github.md` ("Listing Backlog Features") for the exact query. This excludes PRDs
    (which also sit at `Backlog` before `/plan` runs) and `Task` sub-tasks (which
-   `/iteration-plan` also creates at `Backlog`) — only Features are this skill's job.
+   `/iteration-plan` also creates at `Backlog`) — only Features and Bugs are this skill's job.
 3. If none are found, report that and stop — nothing to do.
 4. **With a human present**: show the full list (issue number, title, repo) and ask for
    confirmation before dispatching anything — this fans out into one subagent per issue, so
@@ -100,6 +103,10 @@ Feature's refinement isolated, don't let fifteen Features' worth of context pile
 
 Read `references/github.md` ("Fetching the Feature") and fetch the issue plus its Project item's
 `Status`.
+
+Its Issue Type must be `Feature` or `Bug` (the `feature`/`bug` label on a personal-account
+Project). Anything else — a PRD, a `Task` sub-task, no type — is a hard stop: _"Issue #N is a
+`<type>` — `/refine-story` only refines Features and Bugs."_ Don't touch the issue.
 
 This skill only ever runs on a Feature whose `Status` is `Backlog` (the manual case — someone
 invoking it directly on a freshly-broken-down Feature) or `Refining` (already picked up, re-
@@ -129,6 +136,10 @@ as-is — it's already where it needs to be.
   the PRD's Success Criteria, title it exactly `## PRD Success Criteria coverage` — never
   "Epic Success Criteria coverage" or any other "Epic" phrasing; there's nothing in this
   pipeline that term should ever refer to.
+- **A Bug has no parent PRD** — it has `## Origin` (written by `/report-bug`): read the origin
+  issue and PR it names (`gh issue view`, `gh pr view`) for what the code was meant to do, and
+  treat its Expected behavior as the requirement. Skip the PRD Success Criteria coverage section
+  entirely for a Bug. `## Origin` saying "None" → the Bug's own body is the whole context.
 - Issues that block this one, via the native `Issue.blockedBy` connector (see
   `references/github.md`) — not the text "Blocked by" section, which is just the human-readable
   mirror of the same data.
@@ -153,7 +164,8 @@ Classify each as ✅ clear, ⚠️ ambiguous, or ❓ gap.
 ## Step 4 — Enrich Acceptance Criteria
 
 Never discard an AC `prd-to-issues` already wrote — only improve wording or add missing ones so
-every FR has at least one AC in Given/When/Then form.
+every FR has at least one AC in Given/When/Then form. On a Bug, the regression-test AC
+`/report-bug` wrote is mandatory: keep it, and add it if it's missing.
 
 Best-effort: if `GitHub Management Repo` is configured (see `references/github.md` —
 "Reading the Definition of Done"), try to read `docs/DEFINITION_OF_DONE.md` from it. NFRs
@@ -233,8 +245,9 @@ after the fact — the review becomes post-hoc, not a gate before publishing.
 ## Step 8 — Update the issue
 
 Read `references/github.md` ("Updating the Feature") and:
-1. Rewrite the issue body — same skeleton `prd-to-issues` used, plus the FR/NFR list and
-   enriched ACs.
+1. Rewrite the issue body — same skeleton `prd-to-issues` used (for a Bug, the one
+   `/report-bug` used, `## Origin` and the hidden marker kept as they are), plus the FR/NFR list
+   and enriched ACs.
 2. Post a session comment: decisions made, named assumptions, anything still open — never the
    field values themselves (those live on the Project, not in a comment). Never mention
    `AskUserQuestion`, headless detection, or any other session/tooling mechanics here either —
@@ -271,7 +284,9 @@ latter group, taken from that issue's own session comment) — plus the total co
 
 ## Rules
 
-- Never discard an Acceptance Criterion `prd-to-issues` already wrote — only enrich.
+- Never discard an Acceptance Criterion `prd-to-issues` already wrote — only enrich. A Bug
+  always keeps its regression-test AC.
+- Only Issue Type `Feature` or `Bug` is ever refined — anything else is a hard stop.
 - Business Value, Risk, and Order Rank are gone for good — do not reintroduce them or invent a
   replacement formula.
 - Never use "Epic" anywhere in a published issue body or comment — this pipeline has no Epic
@@ -291,5 +306,5 @@ latter group, taken from that issue's own session comment) — plus the total co
   why, in terms of the Feature itself), never as narration about how or why the run produced
   them. This holds no matter who or what actually executed the skill.
 - With no issue number given, this skill becomes a batch orchestrator over every `Backlog`
-  Feature — it dispatches isolated subagents per issue rather than refining several Features in
+  Feature and Bug — it dispatches isolated subagents per issue rather than refining several Features in
   one shared context.

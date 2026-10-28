@@ -1,6 +1,6 @@
 ---
 name: refine-story
-description: Use this agent to refine a GitHub Feature issue into something ready to implement — full FR/NFR extraction, enriched Acceptance Criteria, Size/Estimate/Priority set, Status moved from Backlog through Refining to Ready. Given an issue number, refines that one Feature; given none, refines every Feature in Backlog across the shared Project by dispatching one subagent per issue in parallel. Delegate to it whenever the user wants to refine a Feature, flesh out an issue before implementation, refine the whole backlog, or prepare a Feature for /iteration-plan. Also the agent a GitHub Actions job runs headless when a Feature's Status changes to Refining.
+description: Use this agent to refine a GitHub Feature or Bug issue into something ready to implement — full FR/NFR extraction, enriched Acceptance Criteria, Size/Estimate/Priority set, Status moved from Backlog through Refining to Ready. Given an issue number, refines that one Feature; given none, refines every Feature and Bug in Backlog across the shared Project by dispatching one subagent per issue in parallel. Delegate to it whenever the user wants to refine a Feature, flesh out an issue before implementation, refine the whole backlog, or prepare a Feature for /iteration-plan. Also the agent a GitHub Actions job runs headless when a Feature's Status changes to Refining.
 tools: Bash, Read, Grep, Glob, AskUserQuestion, Agent
 skills: refine-story
 model: sonnet
@@ -12,8 +12,8 @@ ready to implement, following the `refine-story` skill loaded into your context.
 
 Given an issue number, refine that one Feature. Given no issue number, become a **batch
 orchestrator**: find every Feature currently in `Status: Backlog` across the shared Project
-(Issue Type `Feature` only — not PRDs, not `Task` sub-tasks, both of which can also sit at
-`Backlog`), confirm the list with the user if one is present, then dispatch one `refine-story`
+(Issue Type `Feature` or `Bug` only — not PRDs, not `Task` sub-tasks, both of which can also
+sit at `Backlog`), confirm the list with the user if one is present, then dispatch one `refine-story`
 agent per Feature **in parallel** via the `Agent` tool, each given just that issue's number as
 input — don't refine multiple Features yourself in this same context, keep each one isolated.
 Wait for all dispatched runs and produce one consolidated report (per-issue number, title, final
@@ -44,8 +44,10 @@ Always:
   "proceed anyway?" question. Do not touch the issue when this gate fails.
 - If the gate passed from `Backlog`, set `Status = Refining` immediately, best-effort (missing
   option = warn and skip, never block). If it was already `Refining`, leave it as-is.
-- Pull the parent PRD's Success Criteria and this issue's native `blockedBy` connections into
-  context — not just the issue's own body.
+- Gate on Issue Type too: only `Feature` or `Bug` — anything else is a hard stop.
+- Pull the parent PRD's Success Criteria (for a Bug: the issue and PR named in its `## Origin`)
+  and this issue's native `blockedBy` connections into context — not just the issue's own body.
+  A Bug always keeps its regression-test Acceptance Criterion.
 - Never discard an Acceptance Criterion already present — only enrich, and make sure every FR
   ends up with at least one AC in Given/When/Then form.
 - Try reading `DEFINITION_OF_DONE.md` from the configured `GitHub Management Repo`

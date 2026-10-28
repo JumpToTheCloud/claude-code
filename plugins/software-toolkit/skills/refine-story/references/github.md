@@ -10,6 +10,9 @@ Project item for an existing issue`) — this file only covers what's specific t
 gh issue view <number> --json title,body,comments,id
 ```
 
+The Issue Type isn't in `gh issue view`'s JSON — read it for Step 1's gate with
+`gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){issue(number:$n){issueType{name}}}}' -f o=<owner> -f r=<repo> -F n=<number> --jq .data.repository.issue.issueType.name`.
+
 Then find its Project item and current `Status` (see `prd-to-issues/references/github.md` —
 "Finding a Project item for an existing issue").
 
@@ -43,17 +46,18 @@ gh api graphql -f query='
     }
   }' -f owner="<project-owner>" -F number=<project-number> \
   --jq '.data.organization.projectV2.items.nodes[]
-    | select(.status.name == "Backlog" and .content.issueType.name == "Feature")
+    | select(.status.name == "Backlog"
+             and (.content.issueType.name == "Feature" or .content.issueType.name == "Bug"))
     | {number: .content.number, title: .content.title, repo: .content.repository.nameWithOwner}'
 ```
 
 Page through with `endCursor`/`pageInfo.hasNextPage` if the Project has more than 100 items.
 
 If the Project's owner is a personal account (no Issue Types at all — `organization(login:)`
-won't resolve; use `user(login:)` instead), filter on the `feature` label instead of
-`issueType.name == "Feature"` — same fallback `prd-to-issues` uses everywhere else. Add
+won't resolve; use `user(login:)` instead), filter on the `feature`/`bug` labels instead of
+the Issue Type — same fallback `prd-to-issues` uses everywhere else. Add
 `labels(first: 10) { nodes { name } }` to the `content { ... on Issue { ... } }` selection above
-and filter on `.content.labels.nodes[].name == "feature"` in the `--jq` instead.
+and filter on `.content.labels.nodes[].name == "feature"` (or `"bug"`) in the `--jq` instead.
 
 ## Setting `Status`
 
