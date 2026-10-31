@@ -22,6 +22,18 @@
           "jsonpath": "$.version"
         }
       ]
+    },
+    "plugins/atlassian-toolkit": {
+      "release-type": "simple",
+      "component": "atlassian-toolkit",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": ".claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        }
+      ]
     }
   }
 }
