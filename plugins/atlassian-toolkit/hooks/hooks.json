@@ -1,0 +1,16 @@
+{
+  "description": "Auto-approve the read-only tools of this plugin's Atlassian MCP server — reads have no side effects and are already bounded by the user's own Atlassian permissions. Covers the MCP v2 primary read tools plus discover/executeRead (Atlassian's read-only execution tier for deferred tools). Write tools, executeWrite, executeDestructive and any tool not listed here keep the normal permission prompt.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^mcp__plugin_atlassian-toolkit_atlassian__(atlassianUserInfo|getAccessibleAtlassianResources|discover|executeRead|getJiraIssue|listJiraIssueComments|searchJiraIssuesUsingJql|getConfluenceContent|searchConfluence|getGraphContext|getGraphObject|search|getLoomObjectsContent|getCollaborators|getPeopleInfo|getWorkActivity|getWorkPortfolio)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/approve-read-only.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

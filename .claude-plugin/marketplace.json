@@ -17,6 +17,16 @@
       },
       "category": "software-engineering",
       "keywords": ["git", "commits", "conventional-commits"]
+    },
+    {
+      "name": "atlassian-toolkit",
+      "source": "./plugins/atlassian-toolkit",
+      "description": "Atlassian Cloud integration: preconfigured official Atlassian MCP server for Jira and Confluence (OAuth, nothing to install)",
+      "author": {
+        "name": "jumptothecloud"
+      },
+      "category": "productivity",
+      "keywords": ["atlassian", "jira", "confluence", "mcp"]
     }
   ]
 }
