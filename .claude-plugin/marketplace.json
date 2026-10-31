@@ -2,18 +2,18 @@
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "jumptothecloud-code-marketplace",
   "owner": {
-    "name": "cdk-x",
-    "email": "team@cdk-x.com",
-    "url": "https://github.com/cdk-x"
+    "name": "jumptothecloud",
+    "email": "accounts@jumptothecloud.tech",
+    "url": "https://github.com/JumpToTheCloud"
   },
-  "description": "Marketplace oficial de plugins de Claude Code para cdk-x",
+  "description": "Marketplace oficial de plugins de Claude Code para jumptothecloud",
   "plugins": [
     {
       "name": "software-toolkit",
       "source": "./plugins/software-toolkit",
       "description": "Software engineering practices and workflows for Claude Code, starting with Conventional Commits",
       "author": {
-        "name": "cdk-x"
+        "name": "jumptothecloud"
       },
       "category": "software-engineering",
       "keywords": ["git", "commits", "conventional-commits"]
