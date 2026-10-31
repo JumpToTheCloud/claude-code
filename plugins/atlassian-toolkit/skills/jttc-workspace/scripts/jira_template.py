@@ -120,7 +120,16 @@ def workflow_payload():
     }
 
 
+def workflow_exists():
+    found = api("GET", f"/workflows/search?queryString={urllib.parse.quote(WORKFLOW)}&maxResults=50")
+    return any(w["name"] == WORKFLOW for w in found.get("values", []))
+
+
 def validate():
+    if workflow_exists():
+        # The payload would only clash with itself (same status and workflow names).
+        print(f"workflow '{WORKFLOW}' already exists: nothing to validate, the project is built.")
+        return True
     res = api("POST", "/workflows/create/validation",
               {"payload": workflow_payload(), "validationOptions": {"levels": ["WARNING", "ERROR"]}})
     errors = res.get("errors", [])
@@ -230,9 +239,12 @@ def apply():
             fc = api("POST", "/fieldconfiguration", {"name": FIELD_CONFIG, "description": "JTTC field configuration"})
             print(f"created field configuration {fc['id']}")
         except SystemExit:
-            # This Jira refuses field configuration creation via REST. Create it in the UI
-            # (Settings > Issues > Field configurations > Add), then re-run this script.
-            print(f"SKIPPED field configuration '{FIELD_CONFIG}': not creatable via API; project uses the default one")
+            # This Jira refuses to create or list field configurations via REST, so they are
+            # managed in the UI (Settings > Work items > Field configurations). JTTC has its own
+            # copy there with Components required. Never mark a field required on the Default
+            # Field Configuration: every other project shares it. Verify the real effect with
+            # GET /issue/createmeta/JTTC/issuetypes/<id> and look for required fields.
+            print(f"NOTE field configuration '{FIELD_CONFIG}' is managed in the Jira UI, not by this script")
             return
     fcs = find("/fieldconfigurationscheme", "values", FIELD_CONFIG_SCHEME)
     if not fcs:
