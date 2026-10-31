@@ -1,11 +1,11 @@
-# cdk-x/claude-code — Plugin Marketplace
+# JumpToTheCloud/claude-code — Plugin Marketplace
 
 ![Claude Code Plugin Marketplace](https://img.shields.io/badge/Claude%20Code-Plugin%20Marketplace-6E56CF)
-[![release-please](https://github.com/cdk-x/claude-code/actions/workflows/release-please.yml/badge.svg)](https://github.com/cdk-x/claude-code/actions/workflows/release-please.yml)
+[![release-please](https://github.com/JumpToTheCloud/claude-code/actions/workflows/release-please.yml/badge.svg)](https://github.com/JumpToTheCloud/claude-code/actions/workflows/release-please.yml)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for cdk-x. This repository acts as the catalog (`marketplace.json`) and hosts our own plugins under `plugins/`.
+Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for jumptothecloud. This repository acts as the catalog (`marketplace.json`) and hosts our own plugins under `plugins/`.
 
 ## Structure
 
@@ -21,13 +21,13 @@ Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for cd
 ### Add this marketplace
 
 ```shell
-/plugin marketplace add cdk-x/claude-code
+/plugin marketplace add JumpToTheCloud/claude-code
 ```
 
 ### Install a plugin
 
 ```shell
-/plugin install <plugin-name>@cdk-x-plugins
+/plugin install <plugin-name>@jumptothecloud-code-marketplace
 ```
 
 ### Update the catalog
@@ -41,7 +41,7 @@ Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for cd
 1. Create a folder at `plugins/<plugin-name>/`.
 2. Add `plugins/<plugin-name>/.claude-plugin/plugin.json` with `name`, `description`, `version`, and `author`.
 3. Add its components (`skills/`, `agents/`, `hooks/`, `.mcp.json`, etc.) at the plugin root.
-4. Register the plugin in `.claude-plugin/marketplace.json`, inside the `plugins` array, with at least `name` and `source` (the folder name is enough thanks to `metadata.pluginRoot`).
+4. Register the plugin in `.claude-plugin/marketplace.json`, inside the `plugins` array, with at least `name` and `source` (the relative path, e.g. `./plugins/<plugin-name>`).
 5. Validate the marketplace:
 
    ```bash
@@ -52,7 +52,7 @@ Claude Code [plugin marketplace](https://code.claude.com/docs/en/plugins) for cd
 
    ```shell
    /plugin marketplace add ./.
-   /plugin install <plugin-name>@cdk-x-plugins
+   /plugin install <plugin-name>@jumptothecloud-code-marketplace
    ```
 
 ## Reference
