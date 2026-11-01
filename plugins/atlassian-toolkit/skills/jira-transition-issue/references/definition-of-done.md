@@ -1,138 +1,141 @@
 # Definition of Done
 
-Source of truth for the gate `jira-transition-issue` applies on the way to `Done`. The
-Confluence page `Definition of Done` (223281157) is a mirror for people to read: it is
-generated from this file, never edited by hand.
+**Done means merged into `main`, safe, and left in a state nobody has to come back to.** It does not mean released. Releasing and deploying are tracked in GitHub (tags, releases, deployments). Incomplete or risky behaviour merges behind a feature flag whose default is off.
 
-**Done means merged into `main`, safe, and left in a state nobody has to come back to.** It
-does not mean released (GitHub tracks releases and deployments) and does not mean the feature
-flag is on.
+## How to use this page
 
-## How to apply
-
-- Layered: a sub-task is Done when the universal checklist passes. A Story is Done when all its
-  sub-tasks are Done and the Story checklist passes. Bugs and Epics add their own. The
-  component-type additions apply on top.
-- Every line is a yes/no check. `N/A` needs a reason. A silently missing line fails.
-- Evidence beats assertion: the PR, the CI run, the test, the output. "Done" without a link is
-  not Done.
+- The checklists are **layered**. A sub-task is Done when the universal checklist passes. A Story is Done when all its sub-tasks are Done and the Story checklist passes. Bugs and Epics add their own.
+- On top of that, the **component type** additions apply: library, application, infrastructure or boilerplate.
+- Every line is a yes/no check. Write `N/A` and a reason when one does not apply. Never skip silently.
+- Evidence beats assertion: link the pull request, the CI run, the test, the output. "Done" without a link is not Done.
 - The status moves to `Done` only after the pull request is merged into `main`.
 
-### What the transition skill can and cannot check
-
-| Kind | How it is checked |
-|---|---|
-| Jira facts: all sub-tasks Done, no open *is blocked by*, Flagged empty, Affects version set, Epic children Done | Read from Jira |
-| Facts about the pull request: merged, CI green, reviewed by someone other than the author, Conventional Commit title, branch name | Stated in the `evidence` the caller passes (PR URL, `merged`, CI result, reviewer). The skill rejects `Done` when any is missing, and does not call GitHub |
-| Checks enforced by tooling (lint, types, tests, coverage, secrets scan) | Covered by green CI in the evidence |
-| Judgement items (regression test fails without the fix, root cause written, ADR accepted) | Read from the issue and the evidence, or attested in `evidence` |
-
-## 1. Universal checklist (every sub-task and pull request)
+## 1. Universal checklist (every sub-task and every pull request)
 
 ### Code
-- Does what the sub-task's goal says and satisfies its acceptance criteria.
-- Lint and format pass with no new warnings.
-- Type checking passes, with no new suppressions and no unexplained `any`.
-- No dead code, commented-out code or debug output.
-- Every `TODO` or `FIXME` points to a Jira key.
-- Existing utilities named by the plan were reused.
+
+- Does what the sub-task's goal says, and satisfies the acceptance criteria assigned to it.
+- Lint and format pass with the repository's own configuration, with no new warnings.
+- Type checking passes (for TypeScript, `tsc --noEmit`), with no new suppressions and no `any` added without a comment justifying it.
+- No dead code, commented-out code or debug output left behind.
+- Every `TODO` or `FIXME` points to a Jira key. An anonymous TODO is not allowed.
+- Existing utilities and patterns were reused where the plan named them. No duplicate implementation of something that already exists.
 
 ### Tests
-- `tdd` sub-tasks were built test-first.
-- New logic has unit tests; boundaries have integration tests where planned.
-- Tests assert behaviour, not implementation.
-- Coverage of changed code is at least 80% and overall coverage does not drop.
-- No flaky, skipped or order-dependent tests; no test weakened to get green.
+
+- Sub-tasks labelled `tdd` were built test-first: a failing test existed before the code.
+- New logic has unit tests. Boundaries (I/O, network, database, cloud API) have integration tests where the plan called for them.
+- Tests assert behaviour, not implementation details. They would still pass after a refactor that keeps behaviour.
+- Coverage of the changed code is at least 80%, and overall coverage does not drop.
+- No flaky, skipped or order-dependent tests were added. No test was weakened to make CI green.
 - All tests pass locally and in CI.
 
 ### Version control
-- Branch named `<type>/<JIRA-KEY>-short-slug`, from an up-to-date `main`.
-- Conventional Commits, atomic, with the Jira key in the scope or footer.
+
+- Branch is named `<type>/<JIRA-KEY>-short-slug`, for example `feature/JTTC-42-stack-construct`, and was branched from an up-to-date `main`.
+- Commits follow Conventional Commits, are atomic (one logical change each), and carry the Jira key in the scope or footer.
 - Breaking changes use `!` or a `BREAKING CHANGE:` footer with the migration path.
-- Short-lived branch.
+- The branch is short-lived: merged within days, not weeks, to keep trunk-based development honest.
 
 ### Pull request and review
-- PR title is a Conventional Commit; the description says what, why and how to verify, and
-  links the Jira item.
-- The author reviewed their own diff.
-- At least one review pass by someone other than the author (a human or the code-review tool);
-  blocking findings resolved or filed with a reason.
-- A **HITL** sub-task had a human review its result.
+
+- The PR title is a Conventional Commit. The description says what changed, why, and how to verify it, and links the Jira item.
+- The author reviewed their own diff line by line before asking for review.
+- At least one review pass by someone other than the author, either a human or the code-review tool. All blocking findings are resolved or turned into a linked Jira item with a reason.
+- A sub-task with Mode **HITL** had a human review its result. An agent's output is never merged on its own say-so.
 
 ### Continuous integration
-- Every required check is green on the latest commit.
-- Up to date with `main` and merges without conflict.
+
+- Every required CI check is green on the latest commit: lint, typecheck, test, build, and security or dependency scans when the repository has them.
+- The branch is up to date with `main` and merges without conflict.
 
 ### Security
-- No secrets, tokens or personal data anywhere, history included.
-- External input validated at the boundary; errors do not leak internals.
-- Every new dependency justified, license-compatible, maintained and pinned.
-- Least-privilege permissions.
+
+- No secrets, tokens or personal data in code, tests, logs, commit history or PR text.
+- External input is validated at the boundary. Errors do not leak internals.
+- Every new dependency is justified in the PR, license-compatible, maintained and pinned. Nothing added for a one-line convenience.
+- Permissions are least-privilege (IAM roles, tokens, workflow permissions).
 
 ### Documentation
-- README and API docs reflect the change.
-- An ADR exists for any architectural decision, linked from the PR.
-- A runbook is created or updated if operations changed.
+
+- README and API docs reflect the change. Public API has doc comments.
+- An ADR exists for any architectural decision made along the way, and it is linked from the PR.
+- A runbook is created or updated if operational behaviour changed.
 
 ### Jira hygiene
-- The PR is linked from the Jira item. A closing comment states the outcome and any deviation.
-- An effort off by more than double the estimate is noted in the comment.
-- The Flagged field is cleared and no *is blocked by* link points to an open issue.
 
-## 2. Story checklist (on top of the universal one)
+- The PR is linked from the Jira item. A closing comment states the outcome, plus anything that deviated from the plan.
+- If the effort was off by more than double the estimate, say so in the comment. That data feeds future estimates.
+- The Flagged field is cleared and no "is blocked by" link points to an open issue.
 
-- All sub-tasks are Done, none dropped without a written reason.
-- **Every acceptance criterion is verified**, each with evidence.
-- Every non-functional requirement was verified or its result recorded.
-- Works end to end on the integrated `main`.
-- Behind a feature flag: the flag exists, its default is **off**, and its removal is tracked.
-- No open Bug linked to it blocks its use.
-- The PRD requirements this Story owns are all covered.
+## 2. Story checklist
 
-## 3. Bug checklist (on top of the universal one)
+On top of the universal checklist for every sub-task:
 
-- The **root cause** is written in the Jira item.
-- A **regression test** exists: it fails without the fix and passes with it.
+- All sub-tasks are Done. None was dropped without a written reason.
+- **Every acceptance criterion is verified**, each with evidence: the test that proves it, or the output of a manual check.
+- Every non-functional requirement was verified or its result recorded: performance numbers, security review, compatibility matrix.
+- The feature works end to end, not only piece by piece, when the integrated `main` is exercised.
+- If it is behind a feature flag: the flag exists, its default is **off**, and the removal is tracked in a Jira item.
+- No open Bug linked to it blocks its use. Bugs found along the way are filed, not buried.
+- The functional requirements from the PRD that this Story owns are all covered.
+
+## 3. Bug checklist
+
+On top of the universal checklist:
+
+- The **root cause** is written in the Jira item, not only the symptom.
+- A **regression test** exists. It fails without the fix and passes with it.
 - The original reproduction steps no longer reproduce the defect.
-- Neighbouring code with the same flaw was checked; similar occurrences fixed or filed.
-- **Affects version** is set, or `Affects version: none yet` while the project has no versions.
-- If it needs a patch release, that is stated.
+- Neighbouring code with the same flaw was checked. Similar occurrences are fixed or filed.
+- **Affects version** is set, so the defect is traceable to a release. While the project has no versions yet, saying so is enough.
+- If it needs a patch release, that is stated, because release tracking lives in GitHub.
 
 ## 4. Epic checklist
 
-- All child Stories, Tasks and Bugs are Done, or cancelled with a reason.
-- The PRD success criteria were evaluated; the page records which were met and which were not.
-- The PRD page status is updated and its Technical Plan reflects what was built.
-- ADRs for the decisions taken are `ACCEPTED` and linked.
-- A short retrospective is written in the PRD page.
+- All child Stories, Tasks and Bugs are Done, or were explicitly cancelled with a reason.
+- The success criteria of the PRD were evaluated. The page records which were met and which were not.
+- The PRD page status is updated, and its Technical Plan reflects what was actually built.
+- ADRs for the decisions taken are accepted and linked.
+- A short retrospective is written in the PRD page: what went well, what hurt, what to change in this process.
 - Feature flags created by the Epic are removed or have a dated removal item.
 
 ## 5. Additions by component type
 
-The component's Overview page states its type. A component with no Overview page, or whose
-Overview declares no type (such as `platform`), has no additions: they do not apply and the
-transition says so in its `Checks` line.
+The component's *Overview* page states its type. Add the rows for that type to the universal checklist. A component with no declared type has no additions.
 
 | Type | Also required |
 |---|---|
-| Library | API change classified major, minor or patch with a matching commit type; public exports intentional; usage doc updated; package build dry run succeeds and known consumers still compile |
-| Application | incomplete behaviour behind a flag, default off; artifact built once and promoted unchanged; configuration external; health checks and observability in place; migrations backward compatible; rollback considered |
-| Infrastructure | plan or diff reviewed; applied in non-production first when one exists; idempotent; cost estimated, tags and ownership present; state and backups safe |
-| Boilerplate / projen | a freshly generated repository builds and passes its checks; an existing repository upgrades cleanly with the synth diff explained; the upgrade path is documented |
+| **Library** | Public API change is classified as major, minor or patch, and the commit type matches. Public types and exports are intentional: nothing internal leaks. Usage example or doc updated. A package build dry run succeeds, and known consumers still compile |
+| **Application** | Incomplete behaviour is behind a feature flag, default off. The artifact is built once and promoted unchanged through environments. Configuration is external: nothing is hardcoded per environment. Health checks and the logs or metrics that prove it works are in place. Migrations are backward compatible with the previous version, so rollback is safe. Rollback was considered and, for risky changes, rehearsed |
+| **Infrastructure** | The plan or diff was read and reviewed: nothing destroyed or replaced by surprise. Applied in a non-production environment first, when one exists. Idempotent: applying twice changes nothing the second time. Cost impact estimated, tags and ownership present. State and backups are safe, and destroy paths are understood |
+| **Boilerplate / projen** | A repository generated fresh from it builds and passes its own checks. An existing repository upgrades cleanly, and the synth diff is explained. The change and the upgrade path are documented for consumers |
 
 ## 6. Special cases
 
 | Item | Done means |
 |---|---|
-| Analysis sub-task (spike) | The finding is written with a recommendation and the parent is updated. No code merged unless the spike says so |
-| Architecture Design sub-task | The ADR is `ACCEPTED` (its Status row) and the interface it defines is documented where the implementer will find it |
-| Documentation sub-task | Links valid, examples run, page in the right place with its labels |
-| Hotfix | The universal checklist still applies; a regression test is never skipped |
+| **Analysis** sub-task (spike) | The finding is written down with a recommendation, and the parent item is updated with it. No code is merged unless the spike says so |
+| **Architecture Design** sub-task | The ADR is accepted, and the interface it defines is documented where the implementer will find it |
+| **Documentation** sub-task | Links are valid, examples were run, and the page is in the right place of the tree with its labels |
+| Hotfix | The universal checklist still applies. Only the process around it is faster. A regression test is never skipped |
 
-## 7. Never acceptable
+## 7. What Done does not include
 
-- Done with CI red, or a required check disabled.
+- It is not deployed to production. Deployment and release belong to GitHub.
+- It does not mean the feature flag is on. Turning a flag on is a release decision.
+- It does not mean perfect. Known limitations are written down and filed, not hidden.
+
+## 8. Never acceptable
+
+- Marking Done with CI red, or with a required check disabled.
 - Weakening or deleting a test to get green.
-- Merging a failing build to fix forward.
-- A secret left in history, even if rotated.
+- Merging a failing build "to fix forward".
+- Leaving a secret in history, even if it was rotated.
 - Closing a Bug without a regression test.
+
+## Reviewing this page
+
+Review it after every Epic, in the retrospective, and whenever a defect escaped that a criterion would have caught. Remove a criterion nobody has ever failed once it is enforced by tooling. Record changes in the pull request that edits this page.
+
+Related: *Definition of Ready*, *Process*.

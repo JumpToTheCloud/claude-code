@@ -3,10 +3,11 @@
 The criteria are **not kept here** any more. The source of truth is in the skill that applies
 them, so there is a single copy:
 
-| Gate | File |
+| What | File |
 |---|---|
-| Definition of Ready (entry, Gate 1, Gate 2, bug and task variants, sub-task checklist) | `skills/jira-transition-issue/references/definition-of-ready.md` |
-| Definition of Done (universal, Story, Bug, Epic, component types, special cases) | `skills/jira-transition-issue/references/definition-of-done.md` |
+| Definition of Ready: what must be true (entry, Gate 1, Gate 2, bug and task variants, sub-task checklist). The team's agreement, mirrored to Confluence | `skills/jira-transition-issue/references/definition-of-ready.md` |
+| Definition of Done: what must be true (universal, Story, Bug, Epic, component types, special cases). The team's agreement, mirrored to Confluence | `skills/jira-transition-issue/references/definition-of-done.md` |
+| How `jira-transition-issue` applies them in Jira: which move runs which gate, how each criterion is checked and encoded. Not mirrored | `skills/jira-transition-issue/references/how-gates-are-applied.md` |
 
 The Confluence pages `Definition of Ready` (`223281170`) and `Definition of Done` (`223281157`),
 under Platform → Process, are **mirrors for people to read**. They are generated from those

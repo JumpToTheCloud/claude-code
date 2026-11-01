@@ -27,39 +27,35 @@ Optional:
 
 ## Which gate applies
 
-The criteria live in `references/definition-of-ready.md` and `references/definition-of-done.md`
-(the Confluence pages are generated mirrors, never read here).
+Three files in `references/`, each with its own job:
 
-| Move | Gate | Section of the reference |
-|---|---|---|
-| `Backlog → In refinement` | Entry checklist | `definition-of-ready.md`, "Entry" |
-| `In refinement → Refined` | Gate 1 | "Gate 1" (Bug: "Bug variant of Gate 1"). Task: optional, only when unclear. Epic and sub-task: not applicable |
-| `Refined → Ready` | Gate 2 | "Gate 2". Task: "Task variant of Gate 2". Sub-task: "Sub-task checklist" |
-| `Backlog → Ready` | Task variant of Gate 2, **Task only** | "Task variant of Gate 2". Any other type: reject |
-| `Ready → In Progress` | none | |
-| `In Progress → In Review` | A pull request exists | `pr_url` given and linked on the issue |
-| `In Review → Done` | Definition of Done | `definition-of-done.md`: Universal, plus Story, Bug or Epic by type, plus the component type |
-| Any move to an earlier status | none, needs `reason` | |
+| File | What it holds |
+|---|---|
+| `definition-of-ready.md` | **What must be true** for Entry, Gate 1, Gate 2 and the variants. The team's agreement, mirrored to Confluence |
+| `definition-of-done.md` | **What must be true** for Done. The team's agreement, mirrored to Confluence |
+| `how-gates-are-applied.md` | **How this skill applies them**: which move runs which gate, how each criterion is checked in Jira, and how the Definition of Done is evidenced. Read it first |
+
+The Confluence pages for the two definitions are generated mirrors and are never read here.
 
 ## Steps
 
 1. **Read each issue** with `getJiraIssue` (`view: full`) and `listJiraIssueRemoteIssueLinks`
    through `executeRead`. Take its type, status, fields, description, sub-tasks and links.
-2. **Pick the gate** from the table. If the move skips a status the table does not allow
+2. **Pick the gate** from the table "Which move runs which gate" of
+   `references/how-gates-are-applied.md`. If the move skips a status that table does not allow
    (for example `Backlog → Done`, or `Backlog → Ready` on a Story), reject it.
-3. **Read the reference file** for the gate (`references/definition-of-ready.md` or
-   `references/definition-of-done.md`) and evaluate only the section that applies. Do not call
-   Confluence for the criteria. The only Confluence call allowed is the **PRD approval
-   check**: Gate 1 requires the PRD page linked from the issue or its Epic to be `APPROVED`.
-   Take the page ID from the remote link URL (`/pages/<id>/`) and read the page with
-   `getConfluenceContent` and `detail: summary`: the excerpt starts with the summary table and
-   its Status row reads `Status APPROVED Green` when the status lozenge is `APPROVED`. Any other
-   text, or no Status row, means not approved. If the excerpt does not reach the Status row,
-   read the page once with `detail: full` and `content_format: html` and look for the lozenge
-   `<span data-type="status" ...>`. The state lives in that lozenge only, never in a label. With `No PRD: <reason>` the criterion is `N/A`.
-   A remote link to a Confluence PRD page counts as the PRD link; it does not need to be
-   repeated in the description. For `Done`, see "What the transition skill can and cannot
-   check" in `definition-of-done.md`.
+3. **Read the references.** Start with `references/how-gates-are-applied.md` to know which gate the
+   move runs and how each criterion is checked in Jira, then read the section of
+   `references/definition-of-ready.md` or `references/definition-of-done.md` that applies. Do
+   not call Confluence for the criteria. The only Confluence call allowed is the **PRD approval
+   check** described in `how-gates-are-applied.md`: take the page ID from the remote link URL
+   (`/pages/<id>/`) and read the page with `getConfluenceContent` and `detail: summary`; its
+   excerpt starts with the summary table, and the Status row reads `Status APPROVED Green` when
+   the status lozenge is `APPROVED`. Any other text, or no Status row, means not approved. If the
+   excerpt does not reach the Status row, read the page once with `detail: full` and
+   `content_format: html` and look for the lozenge `<span data-type="status" ...>`. With
+   `No PRD: <reason>` the criterion is `N/A`. For `Done`, see "The Definition of Done: what can be
+   checked and how" in `how-gates-are-applied.md`.
 4. **Evaluate every criterion** of that section against the issue, as yes or no. A criterion
    that does not apply must say `N/A` and a reason **in the issue**; if it is silently
    missing, it fails. Mechanical checks use the data you read (Story Points in the Fibonacci
