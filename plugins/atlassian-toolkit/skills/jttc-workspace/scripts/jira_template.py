@@ -63,6 +63,7 @@ SCREEN_FIELDS = [
     "customfield_10100",  # Size, set by refine-story
     "customfield_10098",  # Business Value, set by refine-story
     "customfield_10131",  # Risk, set by refine-story
+    "timetracking",  # Original estimate in ideal hours, set at creation by jira-create-subtask
     "fixVersions", "versions", "issuelinks", "attachment",
 ]
 
