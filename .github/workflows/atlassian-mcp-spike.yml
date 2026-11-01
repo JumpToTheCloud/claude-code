@@ -1,0 +1,33 @@
+name: atlassian-mcp-spike
+
+# Spike, runs ONLY from the branch spike/atlassian-mcp (never from main): checks that a CI job
+# can authenticate to the Atlassian Rovo MCP server with an API token (Basic auth) and use the
+# tools atlassian-toolkit needs. It is triggered by a push to that branch, so the file never
+# has to exist on the default branch. Delete the branch when the spike is done.
+# Needs the repository secrets ATLASSIAN_EMAIL and ATLASSIAN_API_TOKEN.
+#
+# To test a write, set WRITE_ISSUE_KEY below to a JTTC issue key (a test comment is added).
+
+on:
+  push:
+    branches:
+      - spike/atlassian-mcp
+    paths:
+      - .github/workflows/atlassian-mcp-spike.yml
+      - .github/scripts/atlassian_mcp_spike.py
+
+permissions:
+  contents: read
+
+jobs:
+  spike:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Talk to the Atlassian MCP server
+        env:
+          ATLASSIAN_API_KEY: ${{ secrets.ATLASSIAN_API_KEY }}
+          ATLASSIAN_EMAIL: ${{ secrets.ATLASSIAN_EMAIL }}
+          ATLASSIAN_API_TOKEN: ${{ secrets.ATLASSIAN_API_TOKEN }}
+          WRITE_ISSUE_KEY: ""
+        run: python3 .github/scripts/atlassian_mcp_spike.py
