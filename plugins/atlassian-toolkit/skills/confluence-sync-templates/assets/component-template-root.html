@@ -1,0 +1,25 @@
+<!--
+Component Template root. Source of truth for the Confluence page "Component Template", generated
+by confluence-sync-templates. The page is a mirror: never edit it in Confluence.
+-->
+<h2>The structure</h2>
+<p>A new component gets this tree, one branch per repository, with the same name as its Jira Component:</p>
+<pre><code>Components
+└── &lt;component&gt;
+    ├── &lt;component&gt; — Overview
+    ├── &lt;component&gt; — PRDs
+    │   └── PRD: &lt;title&gt;
+    │       ├── Technical Plan — &lt;title&gt;
+    │       └── Consistency Analysis — &lt;title&gt;
+    ├── &lt;component&gt; — Decisions        ADRs of this component
+    ├── &lt;component&gt; — Design           architecture, diagrams
+    └── &lt;component&gt; — Runbooks         operation and how-tos</code></pre>
+<h2>How to create it</h2>
+<ol>
+<li><p>Create the Jira Component in project <code>JTTC</code> with the component name.</p></li>
+<li><p>Run the <code>confluence-create-component</code> skill with the component name, its type, repository, owner, stack and purpose. It creates the six pages and fills the Overview. Copying this page does not work: a copy does not bring the child pages.</p></li>
+<li><p>Complete the sections of the Overview that the skill leaves with a prompt.</p></li>
+</ol>
+<p>PRDs, ADRs and runbooks are not part of the tree: create them with <code>confluence-create-doc</code> when needed. See <em>How this space works</em>.</p>
+<h2>Pages in this template</h2>
+<div data-type="extension" data-extension-key="children" data-extension-type="com.atlassian.confluence.macro.core" data-parameters='{"macroParams":{"depth":{"value":"1"}},"macroMetadata":{"schemaVersion":{"value":"2"},"title":"Child pages"}}'></div>
