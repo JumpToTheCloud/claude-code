@@ -24,6 +24,7 @@ import urllib.request
 
 ENDPOINT = os.environ.get("MCP_URL", "https://mcp.atlassian.com/v2/mcp")
 CLOUD_ID = os.environ.get("CLOUD_ID", "41be3e35-e509-4a4c-93e1-5460248e11ab")
+SITE_HOST = os.environ.get("SITE_HOST", "jumptothecloud.atlassian.net")
 WRITE_ISSUE_KEY = os.environ.get("WRITE_ISSUE_KEY", "").strip()
 
 # Tools the atlassian-toolkit agent and skills call (see agents/atlassian-operator.md).
@@ -189,19 +190,48 @@ def step_tools_list():
     return f"{len(tools_seen)} tools, all {len(REQUIRED_TOOLS)} required ones present"
 
 
+SITE_FORMS = [("cloudId UUID", CLOUD_ID), ("hostname", SITE_HOST)]
+
+
 def step_resources():
-    text = call_tool("getAccessibleAtlassianResources", {})
-    if CLOUD_ID not in text:
-        raise RuntimeError("the JTTC cloud ID is not among the accessible resources")
-    return "JTTC site visible"
+    # Informational: read:me / read:account are OAuth scopes and may not exist for API tokens.
+    # The toolkit skills carry the cloudId, so this tool is not needed if the others work.
+    try:
+        text = call_tool("getAccessibleAtlassianResources", {})
+    except RuntimeError as exc:
+        return f"not usable with this token (ok if the others pass): {str(exc)[:160]}"
+    return "JTTC site visible" if CLOUD_ID in text else "answered, JTTC not listed"
+
+
+def step_userinfo():
+    text = call_tool("atlassianUserInfo", {})
+    return f"{len(text)} chars returned (account id not printed)"
+
+
+def first_working(tool, build_args):
+    """Try the site in each form (UUID, hostname); pass if any works and say which."""
+    errors = []
+    for label, site in SITE_FORMS:
+        try:
+            text = call_tool(tool, build_args(site))
+            return f"worked with {label}; {len(text)} chars returned"
+        except RuntimeError as exc:
+            errors.append(f"{label}: {str(exc)[:200]}")
+    raise RuntimeError(" | ".join(errors))
 
 
 def step_read():
-    text = call_tool(
+    return first_working(
         "searchJiraIssuesUsingJql",
-        {"cloudId": CLOUD_ID, "jql": "project = JTTC ORDER BY created DESC", "maxResults": 1},
+        lambda site: {"cloudId": site, "jql": "project = JTTC ORDER BY created DESC", "maxResults": 1},
     )
-    return f"{len(text)} chars returned"
+
+
+def step_confluence():
+    return first_working(
+        "searchConfluence",
+        lambda site: {"cloudId": site, "cql": "type = page", "limit": 1},
+    )
 
 
 def step_write():
@@ -219,12 +249,14 @@ def step_write():
 check("1 initialize (token accepted)", step_initialize)
 if "1 initialize (token accepted)" not in failures:
     check("2 tools/list", step_tools_list)
-    check("3 getAccessibleAtlassianResources", step_resources)
-    check("4 read: searchJiraIssuesUsingJql", step_read)
+    check("3 getAccessibleAtlassianResources (informational)", step_resources)
+    check("4 atlassianUserInfo", step_userinfo)
+    check("5 read Jira: searchJiraIssuesUsingJql", step_read)
+    check("6 read Confluence: searchConfluence", step_confluence)
     if WRITE_ISSUE_KEY:
-        check("5 write: addOrEditJiraIssueComment", step_write)
+        check("7 write: addOrEditJiraIssueComment", step_write)
     else:
-        print("SKIP  5 write (set WRITE_ISSUE_KEY to test it)")
+        print("SKIP  7 write (set WRITE_ISSUE_KEY to test it)")
 
 print()
 if failures:
