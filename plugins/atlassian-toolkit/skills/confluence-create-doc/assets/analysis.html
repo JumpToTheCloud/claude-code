@@ -1,0 +1,28 @@
+<!--
+Consistency Analysis template. Source of truth for the page created by confluence-create-doc.
+Confluence mirrors it under Templates; never edit the mirror.
+Markers: {{row:<label>}} is replaced by the summary row value (the Status row by the
+status lozenge), {{section:<heading>}} by the section content converted to HTML. An optional
+section that was not given is removed with its heading. Required: Summary, Pass 1 — Initial Findings, Coverage Summary, Metrics, Verdict. It has no Status row.
+-->
+<table><tbody>
+<tr><th><p>PRD</p></th><td><p>{{row:PRD}}</p></td></tr>
+<tr><th><p>Technical Plan</p></th><td><p>{{row:Technical Plan}}</p></td></tr>
+<tr><th><p>Date</p></th><td><p>{{row:Date}}</p></td></tr>
+<tr><th><p>Passes</p></th><td><p>{{row:Passes}}</p></td></tr>
+<tr><th><p>Findings</p></th><td><p>{{row:Findings}}</p></td></tr>
+<tr><th><p>Requirement coverage</p></th><td><p>{{row:Requirement coverage}}</p></td></tr>
+<tr><th><p>Verdict</p></th><td><p>{{row:Verdict}}</p></td></tr>
+</tbody></table>
+<h2>Summary</h2>
+{{section:Summary}}
+<h2>Pass 1 — Initial Findings</h2>
+{{section:Pass 1 — Initial Findings}}
+<h2>Pass 2 — Final State (post-fix)</h2>
+{{section:Pass 2 — Final State (post-fix)}}
+<h2>Coverage Summary</h2>
+{{section:Coverage Summary}}
+<h2>Metrics</h2>
+{{section:Metrics}}
+<h2>Verdict</h2>
+{{section:Verdict}}

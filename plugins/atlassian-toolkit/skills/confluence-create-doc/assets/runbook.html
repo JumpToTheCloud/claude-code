@@ -1,0 +1,29 @@
+<!--
+Runbook template. Source of truth for the page created by confluence-create-doc.
+Confluence mirrors it under Templates; never edit the mirror.
+Markers: {{row:<label>}} is replaced by the summary row value (the Status row by the
+status lozenge), {{section:<heading>}} by the section content converted to HTML. An optional
+section that was not given is removed with its heading. Required: Purpose, Prerequisites, Steps, Verification, Rollback. It has no Status row.
+-->
+<table><tbody>
+<tr><th><p>Component</p></th><td><p>{{row:Component}}</p></td></tr>
+<tr><th><p>Owner</p></th><td><p>{{row:Owner}}</p></td></tr>
+<tr><th><p>Last verified</p></th><td><p>{{row:Last verified}}</p></td></tr>
+<tr><th><p>Risk</p></th><td><p>{{row:Risk}}</p></td></tr>
+<tr><th><p>Estimated time</p></th><td><p>{{row:Estimated time}}</p></td></tr>
+<tr><th><p>Needs approval</p></th><td><p>{{row:Needs approval}}</p></td></tr>
+<tr><th><p>Trigger</p></th><td><p>{{row:Trigger}}</p></td></tr>
+<tr><th><p>Related</p></th><td><p>{{row:Related}}</p></td></tr>
+</tbody></table>
+<h2>Purpose</h2>
+{{section:Purpose}}
+<h2>Prerequisites</h2>
+{{section:Prerequisites}}
+<h2>Steps</h2>
+{{section:Steps}}
+<h2>Verification</h2>
+{{section:Verification}}
+<h2>Rollback</h2>
+{{section:Rollback}}
+<h2>Troubleshooting</h2>
+{{section:Troubleshooting}}

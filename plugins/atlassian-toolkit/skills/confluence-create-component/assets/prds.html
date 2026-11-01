@@ -1,0 +1,16 @@
+<!--
+PRDs page. Source of truth for the page created by confluence-create-component.
+Confluence mirrors the component tree under Templates; never edit the mirror.
+Markers: {{component}} is the component name.
+-->
+<div data-type="panel-info"><p><strong>What was specified, and why.</strong> One child per PRD, titled <code>PRD: &lt;title&gt;</code>. Each PRD has two children of its own: <code>Technical Plan — &lt;title&gt;</code> and <code>Consistency Analysis — &lt;title&gt;</code>.</p></div>
+<h2>Rules</h2>
+<ul>
+<li><p>Create these pages with the <code>confluence-create-doc</code> skill, never by hand. A PRD has no number: it is identified by its page, which keeps its ID when it is renamed.</p></li>
+<li><p>The state of a PRD or a plan is the status lozenge of its summary table: DRAFT, IN REVIEW, APPROVED or SUPERSEDED.</p></li>
+<li><p>A PRD usually leads to one Jira Epic. That is the common case and not an obligation: some PRDs produce several Epics, some produce only Stories.</p></li>
+<li><p>Link the Epic in the PRD summary table, and link the PRD from the Epic.</p></li>
+<li><p>When a PRD is replaced, set its status to SUPERSEDED, point to its replacement and move it to Archive.</p></li>
+</ul>
+<h2>PRDs</h2>
+<div data-type="extension" data-extension-key="children" data-extension-type="com.atlassian.confluence.macro.core" data-parameters='{"macroParams":{"depth":{"value":"1"}},"macroMetadata":{"schemaVersion":{"value":"2"},"title":"Child pages"}}'></div>
