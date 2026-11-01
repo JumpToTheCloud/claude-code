@@ -6,7 +6,7 @@ them, so there is a single copy:
 | What | File |
 |---|---|
 | Definition of Ready: what must be true (entry, Gate 1, Gate 2, bug and task variants, sub-task checklist). The team's agreement, mirrored to Confluence | `skills/jira-transition-issue/references/definition-of-ready.md` |
-| Definition of Done: what must be true (universal, Story, Bug, Epic, component types, special cases). The team's agreement, mirrored to Confluence | `skills/jira-transition-issue/references/definition-of-done.md` |
+| Definition of Done: what must be true (universal, Story, Bug, Epic, special cases). The team's agreement, mirrored to Confluence | `skills/jira-transition-issue/references/definition-of-done.md` |
 | How `jira-transition-issue` applies them in Jira: which move runs which gate, how each criterion is checked and encoded. Not mirrored | `skills/jira-transition-issue/references/how-gates-are-applied.md` |
 
 The Confluence pages `Definition of Ready` (`223281170`) and `Definition of Done` (`223281157`),

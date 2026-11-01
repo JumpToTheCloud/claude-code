@@ -15,8 +15,10 @@ change of the agreement. Only the two definitions are mirrored to Confluence.
 | `Refined → Ready` | Gate 2. Task: the Task variant. Sub-task: the sub-task checklist | "Gate 2", "Task variant of Gate 2", "Sub-task checklist" |
 | `Backlog → Ready` | The Task variant of Gate 2, **Task only**. Any other type is rejected | "Task variant of Gate 2" |
 | `Ready → In Progress` | nothing | |
-| `In Progress → In Review` | A pull request exists (`pr_url` given and linked on the issue) | |
-| `In Review → Done` | The Definition of Done: universal, plus Story, Bug or Epic, plus the component type | `definition-of-done.md` |
+| `In Progress → In Review` | A pull request exists (`pr_url` given and linked on the issue). **Not for an Epic** | |
+| `In Review → Done` | The Definition of Done: universal, plus the Story or Bug checklist, and the evidence contract below | `definition-of-done.md` |
+| Epic: `Backlog → In Progress` | nothing. It moves when its first child starts. An Epic may skip the refinement statuses | |
+| Epic: `In Progress → Done` | The Epic checklist (all children Done or cancelled with a reason) and the Epic evidence below. An Epic has **no `In Review` and no pull request** | `definition-of-done.md`, "Epic checklist" |
 | Any move to an earlier status | nothing, but a `reason` is needed and written as a comment | |
 
 A parent and its sub-tasks move to `Ready` together: the whole set is checked first and nothing
@@ -41,15 +43,36 @@ silently missing fails.
 | Mode and `tdd` | The Mode field and the `tdd` label |
 | Blockers | *Blocks* / *is blocked by* links with no cycle |
 
-## The Definition of Done: what can be checked and how
+## The Definition of Done: the evidence contract
 
-| Kind | How it is checked |
+The Definition of Done is long, and most of it is checked by the pull request review and by CI,
+not by this skill. The skill asks for a **fixed contract** and nothing more, so that every
+agent applies the same gate and the caller knows exactly what to pass.
+
+**Read from Jira** (never taken from the caller's word): all sub-tasks Done, no open *is blocked
+by* link, `Flagged` empty, no open Bug blocking the item, a closing comment, and for a Bug the
+root cause written in the issue and the Affects version stated.
+
+**The caller passes in `evidence`**, for every item except an Epic:
+
+| Field | Meaning |
 |---|---|
-| Jira facts: all sub-tasks Done, no open *is blocked by*, Flagged empty, Affects version stated, Epic children Done | Read from Jira |
-| Facts about the pull request: merged, CI green, reviewed by someone other than the author, Conventional Commit title, branch name | Stated in the `evidence` the caller passes (PR URL, `merged`, CI result, reviewer). The skill rejects `Done` when any is missing, and does not call GitHub |
-| Checks enforced by tooling (lint, types, tests, coverage, secrets scan) | Covered by green CI in the evidence |
-| Judgement items (regression test fails without the fix, root cause written, ADR accepted) | Read from the issue and the evidence, or attested in `evidence` |
+| `pr_url` | The pull request |
+| `merged` | It is merged into `main` |
+| `ci` | The result of the required checks on the latest commit |
+| `reviewer` | Who reviewed it, and that it is not the author (a human or the code-review tool; a HITL sub-task had a human) |
 
-`Done` needs `evidence` and a `closing_comment`, and the Checks line says that the
-component-type additions do not apply when the component has no Overview page or no declared
-type (as `platform`).
+and, by type:
+
+| Type | Also in `evidence` |
+|---|---|
+| Story | One line per acceptance criterion with the test or check that proves it, the result of the non-functional requirements, and the feature flag state (none, or its name, default off, removal tracked) |
+| Bug | The regression test (fails without the fix, passes with it) and that the original reproduction no longer reproduces |
+| Task, Development, Automation, Documentation sub-task | nothing more |
+| Analysis sub-task | The link to the written finding |
+| Architecture Design sub-task | The ADR link: its Status row must read `ACCEPTED` (same read as the PRD check) |
+| Epic (no `pr_url`) | Which success criteria of the PRD were met and which were not (or `N/A: no PRD`), the retrospective link or `N/A`, the ADRs accepted, and the flags removed or dated |
+
+Everything else in the Definition of Done is covered by the pull request review and by green CI.
+The skill does **not** ask for it line by line, and it rejects `Done` only when a field above is
+missing, a Jira fact fails, or the caller's own words contradict a line.
