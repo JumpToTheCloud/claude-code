@@ -31,7 +31,7 @@ Jump to the Cloud Home                          223412335
 │   └── Roadmap                                 261357603
 ├── Components                                  261324818   one branch per repository
 │   └── <component>/                            (none yet)
-├── Templates                                   261226498   copy, never edit
+├── Templates                                   261226498   generated mirrors, never edit
 │   ├── PRD Template                            261357620
 │   ├── Technical Plan Template                 261423134
 │   ├── Consistency Analysis Template           261390366
@@ -76,7 +76,7 @@ Confluence needs **unique titles across the whole space**, so titles carry their
 |---|---|
 | Component | `<component>` (same name as the Jira Component) |
 | Component sections | `<component> — Overview`, `— PRDs`, `— Decisions`, `— Design`, `— Runbooks` |
-| PRD | `PRD: <title>` |
+| PRD | `PRD: <title>`, no number: it is identified by its page, whose ID survives a rename |
 | Technical plan | `Technical Plan — <title>` (same title as its PRD) |
 | Consistency analysis | `Consistency Analysis — <title>` |
 | ADR | `ADR-NNNN: short imperative title`, numbered per scope, never reused |
@@ -89,8 +89,12 @@ If two components both reach `ADR-0001`, add the component name to the title.
 | Kind | Labels |
 |---|---|
 | Type | `prd`, `plan`, `analysis`, `adr`, `runbook`, `design`, `process`, `template` |
-| Lifecycle | `draft`, `approved`, `superseded` |
-| ADR status | `adr-proposed`, `adr-accepted`, `adr-superseded` |
+
+**The state of a page is not a label.** Nothing can remove a label (the MCP has no such
+operation), so the state lives in a **status lozenge** in the Status row of the summary table,
+which can be replaced: `DRAFT`, `IN REVIEW`, `APPROVED`, `SUPERSEDED` for a PRD or a plan;
+`PROPOSED`, `ACCEPTED`, `SUPERSEDED` for an ADR. A Consistency Analysis and a Runbook have no
+Status row. The only label of a page is its type.
 
 The component is **not** a label: it is the page's position in the tree. Add labels with
 `addLabelsToConfluenceContent`.
@@ -114,28 +118,38 @@ produce (REQ-n, NFR-n, SC-n, OQ-n; modules table, phases; findings table, covera
 
 ## Recipes
 
-**Create a page from a template.** `copyConfluenceContent` with the template's `contentId`, an
-explicit `title`, and `parentContentId`. Then update its summary table, add the type label and a
-lifecycle label (`draft`), and remove the "Template" note panel at the top.
+**Create a document page.** Use the `confluence-create-doc` skill. The templates of the PRD,
+Technical Plan, Consistency Analysis, ADR and Runbook are kept in that skill (`assets/`) and the
+page is created in one call; the pages under `Templates` are generated mirrors that are neither
+copied nor read. Only the `Component Template` tree is still copied with
+`copyConfluenceContent` (see "Add a component").
 
-**Add a component.**
+**Add a component.** Create the Jira Component first (the MCP cannot: Jira UI or
+`jira_template.py`), then run the `confluence-create-component` skill, which does the rest. By
+hand, the steps are:
 1. Create the Jira Component in JTTC with the component name.
 2. Copy `Component Template` (261259287) under `Components` (261324818), renaming it to the
    component name, and its five children renaming `Component Template` to the component name.
-3. List the descendants of the new page. Copying the children was never verified: if they did
-   not come along, copy them one by one.
+3. **Copying a page does not copy its children** (verified 2026-11-01: the copy of
+   `Component Template` had no descendants). Copy each of the five children yourself under the
+   new page, with its own title: Overview `261521416`, PRDs `261357639`, Decisions `261324879`,
+   Design `261324896`, Runbooks `261357656`. Then list the descendants and check there are five.
 4. Fill in the Overview summary table. Remove the warning panel from the copy.
 
-**Write a PRD.** Copy PRD Template under `<component> — PRDs`, title `PRD: <title>`, labels
-`prd` + `draft`. Create the two children from the plan and analysis templates when reaching
-that stage. On approval swap `draft` for `approved`. If an Epic is created, put its key in the
+**Write a PRD.** Copy PRD Template under `<component> — PRDs`, title `PRD: <title>`, label
+`prd`. Create the two children from the plan and analysis templates when reaching
+that stage. On approval set the Status lozenge to `APPROVED`. If an Epic is created, put its key in the
 summary table and link the PRD from the Epic (`createJiraIssueRemoteIssueLink`).
 
-**Record a decision.** Copy ADR Template under the right Decisions page, number it, set
-`adr-proposed`, then `adr-accepted`. To reverse one, write a new ADR and mark the old one
-`adr-superseded`, linking both ways.
+**Record a decision.** Copy ADR Template under the right Decisions page, number it. Its Status
+lozenge is `PROPOSED` until it is set to `ACCEPTED`. To reverse one, write a new ADR and mark the old one
+`SUPERSEDED`, linking both ways.
 
-**Retire a page.** Add `superseded` and a first line pointing to the replacement, then move it
+**Approve a plan.** A Technical Plan can only go to `APPROVED` when its Consistency Analysis exists
+and its verdict is `Ready`; `confluence-update-doc` refuses otherwise. The person who reviews the
+plan decides, and the skill records it.
+
+**Retire a page.** Set its Status lozenge to `SUPERSEDED` and add a first line pointing to the replacement, then move it
 under Archive with `moveConfluenceContent` (`position: append`). Never delete.
 
 ## PRD and Epic

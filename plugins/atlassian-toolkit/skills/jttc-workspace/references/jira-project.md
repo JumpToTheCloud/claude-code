@@ -75,6 +75,7 @@ Required when **creating** an issue: project, issue type, summary, reporter, and
 | Risk | `customfield_10131` | option | refine-story | `1`, `5`, `10` |
 | Mode | `customfield_10231` | option | iteration-plan | `AFK`, `HITL` (sub-tasks) |
 | Flagged | `customfield_10021` | array | anyone | marks blocked work |
+| Original estimate | `timetracking` | system | creation (sub-tasks) | ideal hours as `"4h"`; at most `8h`. Must be on `JTTC Default Screen`, added by `jira_template.py apply` |
 | Sprint | `customfield_10020` | array | planning | |
 | Priority, Labels, Fix versions, Affects versions, Linked issues, Attachment, Assignee | system | | | |
 
