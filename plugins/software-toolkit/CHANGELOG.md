@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/JumpToTheCloud/claude-code/compare/software-toolkit-v1.1.0...software-toolkit-v1.1.1) (2026-11-01)
+
+
+### Miscellaneous
+
+* rebrand cdk-x to JumpToTheCloud ([e993b5a](https://github.com/JumpToTheCloud/claude-code/commit/e993b5ae05062222019725f16b06210d8afba368))
+
 ## [1.1.0](https://github.com/JumpToTheCloud/claude-code/compare/software-toolkit-v1.0.0...software-toolkit-v1.1.0) (2026-10-29)
 
 
