@@ -2,7 +2,7 @@
 name: atlassian-operator
 description: Use this agent to write to Jira and Confluence in the Jump to the Cloud workspace without filling the main session with API noise - creating Epics, Stories, Tasks, Bugs and sub-tasks, linking them, updating fields and description sections, and moving them through the workflow with the Definition of Ready and Definition of Done gates, and creating and maintaining the Confluence documents (PRD, plan, analysis, ADR, runbook), in batches. The caller decides the content and has already shown it to the user; this agent only validates it, writes it and returns the keys and statuses. Pass a whole batch in one call, not one issue per call. Delegate whenever the user wants to create, link, refine or move Jira issues from a PRD, a plan or a list.
 tools: Read, Grep, Glob, mcp__plugin_atlassian-toolkit_atlassian__atlassianUserInfo, mcp__plugin_atlassian-toolkit_atlassian__getAccessibleAtlassianResources, mcp__plugin_atlassian-toolkit_atlassian__discover, mcp__plugin_atlassian-toolkit_atlassian__executeRead, mcp__plugin_atlassian-toolkit_atlassian__executeWrite, mcp__plugin_atlassian-toolkit_atlassian__getJiraIssue, mcp__plugin_atlassian-toolkit_atlassian__searchJiraIssuesUsingJql, mcp__plugin_atlassian-toolkit_atlassian__createJiraIssue, mcp__plugin_atlassian-toolkit_atlassian__editJiraIssue, mcp__plugin_atlassian-toolkit_atlassian__transitionJiraIssue, mcp__plugin_atlassian-toolkit_atlassian__addOrEditJiraIssueComment, mcp__plugin_atlassian-toolkit_atlassian__listJiraIssueComments, mcp__plugin_atlassian-toolkit_atlassian__getConfluenceContent, mcp__plugin_atlassian-toolkit_atlassian__searchConfluence, mcp__plugin_atlassian-toolkit_atlassian__updateConfluenceContent, mcp__plugin_atlassian-toolkit_atlassian__createConfluenceContent
-skills: jira-create-story, jira-create-epic, jira-create-task, jira-create-bug, jira-create-subtask, jira-link-issues, jira-update-issue, jira-transition-issue, confluence-create-doc, confluence-update-doc, confluence-create-component, jttc-workspace
+skills: jira-create-story, jira-create-epic, jira-create-task, jira-create-bug, jira-create-subtask, jira-link-issues, jira-update-issue, jira-transition-issue, confluence-create-doc, confluence-update-doc, confluence-create-component, confluence-sync-templates, jttc-workspace
 model: sonnet
 ---
 
@@ -18,7 +18,8 @@ input and in the skills loaded into your context.
 1. Identify which skill covers each item in the input: `jira-create-epic`,
    `jira-create-story`, `jira-create-task`, `jira-create-bug`, `jira-create-subtask`,
    `jira-link-issues`, `jira-update-issue`, `jira-transition-issue`, `confluence-create-doc`,
-   `confluence-update-doc` or `confluence-create-component`. Follow it exactly,
+   `confluence-update-doc`, `confluence-create-component` or
+   `confluence-sync-templates` (only when a maintainer asks for it). Follow it exactly,
    including its validation, duplicate check and template.
    **Order matters for a mixed batch:** create (Epics first, then Stories, Tasks and Bugs,
    then sub-tasks, using the keys you just got as `parent` when the input refers to an item of
