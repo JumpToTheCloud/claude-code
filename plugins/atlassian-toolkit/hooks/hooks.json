@@ -1,5 +1,5 @@
 {
-  "description": "Auto-approve the read-only tools of this plugin's Atlassian MCP server — reads have no side effects and are already bounded by the user's own Atlassian permissions. Covers the MCP v2 primary read tools plus discover/executeRead (Atlassian's read-only execution tier for deferred tools). Write tools, executeWrite, executeDestructive and any tool not listed here keep the normal permission prompt.",
+  "description": "Auto-approve the read-only tools of this plugin's Atlassian MCP server — reads have no side effects and are already bounded by the user's own Atlassian permissions. Covers the MCP v2 primary read tools plus discover/executeRead (Atlassian's read-only execution tier for deferred tools). Non-destructive writes (create/edit/transition/comment, Confluence create/update, executeWrite) are approved only when issued by a subagent; from the main session, and always for executeDestructive and any tool not listed here, the normal permission prompt applies.",
   "hooks": {
     "PreToolUse": [
       {
@@ -8,6 +8,15 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/approve-read-only.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "^mcp__plugin_atlassian-toolkit_atlassian__(createJiraIssue|editJiraIssue|transitionJiraIssue|addOrEditJiraIssueComment|createConfluenceContent|updateConfluenceContent|executeWrite)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/approve-agent-writes.sh"
           }
         ]
       }
