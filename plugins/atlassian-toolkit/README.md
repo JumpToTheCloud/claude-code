@@ -7,7 +7,16 @@ Atlassian Cloud integration for Claude Code. Installing this plugin preconfigure
 | Component | Purpose |
 |---|---|
 | `.mcp.json` | Registers the remote Atlassian MCP server (`atlassian`, HTTP). |
-| `hooks/` | Auto-approves the server's **read-only** tools (get/search/list, `discover` and `executeRead`). Tools that create, edit, transition or comment, plus `executeWrite` and `executeDestructive`, always ask for confirmation. |
+| `hooks/` | Auto-approves the server's **read-only** tools (get/search/list, `discover` and `executeRead`). Non-destructive writes (create, edit, transition, comment, `executeWrite`) are approved only when a subagent issues them, because the content was already approved in the main session; from the main session they ask. `executeDestructive` always asks. |
+| `agents/atlassian-operator` | Isolated subagent that writes to Jira so the main session stays clean. The caller decides and shows the content; the agent validates it, creates it and returns the keys. Pass batches. It cannot delete anything. |
+| `skills/jira-create-story` | Creates Stories in JTTC from a structured input, using the Story template in its `assets/`. Blocks on missing entry-level fields, leaves refinement sections as `Pending refinement`, skips duplicates. |
+| `skills/jira-create-{epic,task,bug,subtask}` | Same for Epics, Tasks, Bugs and sub-tasks (five types, estimate up to 8 h, Mode AFK or HITL). |
+| `skills/jira-link-issues` | Blocks / relates / remote links, with a cycle check and no duplicates. |
+| `skills/jira-update-issue` | Story Points, Size, Business Value, Risk, Mode, labels, Flagged, estimate, description sections and comments. Never changes the status. |
+| `skills/jira-transition-issue` | Moves issues and enforces the Definition of Ready (two gates) and Definition of Done by reading the live Confluence pages. A failed gate leaves the issue where it is. |
+| `skills/confluence-create-doc` | Creates a PRD, Technical Plan, Consistency Analysis, ADR or Runbook page from the template kept in its `assets/`: finds the parent, builds and checks the title, fills the summary table and sections and creates the page in one call, with the type label. |
+| `skills/confluence-update-doc` | Maintains those pages with targeted edits: summary rows, sections, status changes (the status lozenge in the summary table) and retire (`SUPERSEDED`, moves under Archive). Never deletes a page and cannot remove a label. |
+| `skills/confluence-create-component` | Bootstraps the Confluence side of a new component: the component page and its five children (Overview, PRDs, Decisions, Design, Runbooks) with the Overview table filled. The Jira Component must exist first. |
 | `skills/jttc-workspace` | Reference map of the Jump to the Cloud workspace: the Jira project `JTTC` (workflow, issue types, custom fields, boards, components) and the Confluence space `JTTC` (page tree, templates, naming, labels), plus the Definition of Ready and Definition of Done. Activates on its own when you work with them; the IDs it carries are specific to the `jumptothecloud.atlassian.net` site. |
 
 ### The `jttc-workspace` skill
