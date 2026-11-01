@@ -13,7 +13,7 @@ description (markdown).
 | `components` | creation | Exactly one |
 | `parent` | creation | Optional Epic key |
 | `priority` | creation | Reflects the severity |
-| Affects versions `versions` | creation | Version where it was observed |
+| Affects versions `versions` | creation | Optional. Version where it was observed. While the project has no versions, the Environment section says `Affects version: none yet` |
 | Origin link | creation | Optional. *relates* issue link or remote link, see Guidance |
 | `labels` | creation | Optional |
 | Story Points `customfield_10041` | refinement | |
