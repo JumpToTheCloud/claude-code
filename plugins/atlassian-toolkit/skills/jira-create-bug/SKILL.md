@@ -18,7 +18,7 @@ For each Bug:
 | `summary` | yes | What fails, in plain words, at most 100 characters, no `Bug:` prefix |
 | `component` | yes | Exactly one Jira Component name |
 | `environment` | yes | Where it was observed (version, OS, environment, branch) |
-| `affects_version` | yes | Version where it was observed |
+| `affects_version` | no | Version where it was observed. When absent, and while the project has no versions, the Environment section says `Affects version: none yet` |
 | `steps_to_reproduce` | yes | Numbered, exact |
 | `expected` and `actual` | yes | Both |
 | `impact` and `severity` | yes | Who is affected and how badly |

@@ -54,8 +54,4 @@ All required at creation. Documentation sub-tasks may mark Tests as `N/A: reason
 ## Tests
 
 {{tests_to_write_and_level}}
-
-## Estimate
-
-{{hours}}h ideal. Mode: {{AFK_or_HITL}}.
 <!-- body:end -->

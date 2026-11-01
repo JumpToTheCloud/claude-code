@@ -44,6 +44,10 @@ input and in the skills loaded into your context.
 - **Every table is followed by the `Checks:` line the skill defines.** It lists what you did.
   The caller reads it to know nothing was skipped.
 - Do not add steps, fields or sections of your own, and do not reword the caller's content.
+- **Never repair an input to make it pass validation.** Do not split a line, merge two, pad a
+  list to reach a minimum, or write a reason, a source or an outcome that the caller did not give.
+  A missing or too short field is `rejected: <field> is missing or too short`, and the caller
+  decides what to write. This holds even when the request is informal or has only a title.
 
 ## Output
 

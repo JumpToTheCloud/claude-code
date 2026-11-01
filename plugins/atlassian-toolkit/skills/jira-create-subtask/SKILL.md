@@ -65,8 +65,8 @@ The Component is **not** an input: it is read from the parent.
    "timetracking": {"originalEstimate": "<n>h"}}`. If `Mode` is rejected, look up the option ID
    (`GET /rest/api/3/field/customfield_10231/context`, then `/option`) as `jttc-workspace`
    says and retry with the ID. On any other rejection use the `repairHint` and retry once. If
-   `timetracking` is not on the screen, keep the estimate in the Estimate section and report
-   `created, estimate field not set`.
+   `timetracking` is not on the screen, report `created, estimate field not set`: the estimate
+   and the Mode live only in their fields, never repeated in the description.
 6. **Do not transition and do not link.** Sub-tasks are born in `Backlog`: the workflow has a
    single initial status. If `blocked_by` was given, create the sub-task anyway and report
    `created, blocked_by not applied` so the caller sends it to `jira-link-issues`.
