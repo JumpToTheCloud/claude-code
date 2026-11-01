@@ -33,6 +33,9 @@ so the plugins are split by tracker and share one neutral contract.
 | 17 | **`confluence-sync-templates` mirrors everything the plugin owns.** Besides the templates it regenerates the Definition of Ready and Done pages, the Templates index, the Component Template tree and "How this space works" (the page that said the state is a label), each with a generated-do-not-edit notice. It is not `disable-model-invocation`, because the agent that must run it preloads it (the main session would ask permission for each of the ~20 writes); its description limits it to explicit maintainer requests. |
 | 18 | **The sync never writes without the maintainer's confirmation.** It runs in two steps: a preview that compares the rendered pages with the current ones and summarises what changes on each, and an execution that needs `confirmed: true`. The agent cannot talk to the maintainer, so the session that calls the skill shows the summary and asks; a general earlier approval does not count. Unchanged pages are skipped, so a run does not add empty versions. |
 | 19 | **The Definition of Ready and Done say what must be true; `how-gates-are-applied.md` says how the skill applies it.** The two definitions are the team's agreement, free of Jira details, and are the only ones mirrored to Confluence. Which move runs which gate, how each criterion is checked or encoded in Jira (remote links, the `No PRD` line, the Status lozenge, `none yet`, the evidence for Done) and what the skill can and cannot verify live in `jira-transition-issue/references/how-gates-are-applied.md`. Changing a definition is a change of the agreement; changing the other file is a change of the tool; both go through a pull request. |
+| 20 | **There is no component type.** The distinction Library, Application, Infrastructure, Boilerplate entered on 2026-10-31, when the Definition of Done and the Component Template were rewritten from scratch (the June version of the DoD did not have it). It was carried into the plugin without question and made two agents disagree on the same component. It is removed: no section 5 in the Definition of Done, no `type` input in `confluence-create-component`, no `Type` row in the Overview. The workflow is the same whoever does the work and whatever the component. |
+| 21 | **Done has a fixed evidence contract.** The transition reads the Jira facts itself and asks the caller for `pr_url`, `merged`, `ci` and `reviewer`, plus what each type adds. The rest of the Definition of Done is covered by the pull request review and by CI and is not asked line by line, so every agent applies the same gate. |
+| 22 | **An Epic is closed without a pull request.** `Backlog → In Progress` when its first child starts, then `In Progress → Done` when all its children are Done or cancelled with a reason, with the Epic evidence. It has no `In Review`. |
 
 ## Skill inventory
 
@@ -91,9 +94,13 @@ call; it does not approve calls.
 
 1. `mcp__plugin_atlassian-toolkit_atlassian__*` tool names in a plugin agent's `tools`:
    **works**.
-2. Hook identifying a subagent call: the hook approves on `agent_id` in its input. The agent
-   wrote without blocking, but it was **not confirmed** that the hook (and not another
-   mechanism) approved the calls. Re-check when a write is seen to prompt.
+2. Hook identifying a subagent call: the hook approves on `agent_id` in its input.
+   **Confirmed 2026-11-01** with the debug log of a fresh session (`claude --debug`): for
+   `createJiraIssue` issued by the agent, `approve-agent-writes.sh` ran, returned
+   `permissionDecision: allow` with its own reason, and Claude Code logged "Hook approved tool
+   use ... bypassing permission prompt". The decision came from the hook, not from the
+   auto-mode classifier. Not observed: the negative case, a write from the main session in
+   normal permission mode, which by construction produces no hook output and keeps the prompt.
 3. `skills:` frontmatter preload in a plugin agent: **works**.
 4. Duplicate check: the same input a second time returned `duplicate` and created nothing.
 5. Template guidance must stay outside the `body` markers, or it leaks into the issue. Each

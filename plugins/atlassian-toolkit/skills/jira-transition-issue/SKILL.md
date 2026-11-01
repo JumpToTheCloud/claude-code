@@ -20,10 +20,10 @@ Optional:
 
 | Input | Needed for | Notes |
 |---|---|---|
-| `evidence` | `Done` | PR URL, CI run, test, output. "Done" without a link is not Done |
+| `evidence` | `Done` | The fixed contract of `how-gates-are-applied.md`: `pr_url`, `merged`, `ci`, `reviewer`, plus what that type adds. "Done" without a link is not Done |
 | `closing_comment` | `Done` | Outcome and anything that deviated from the plan |
 | `reason` | any move backwards | A move to an earlier status is allowed without a gate, but needs a reason, written as a comment |
-| `pr_url` | `In Review` | The open pull request |
+| `pr_url` | `In Review` | The open pull request. Not used for an Epic, which has no `In Review` |
 
 ## Which gate applies
 
@@ -64,13 +64,16 @@ The Confluence pages for the two definitions are generated mirrors and are never
    a Component, a parent, all sub-tasks Done, `Flagged` empty and no open *is blocked by*).
    Judgement checks (acceptance criteria that are testable, every NFR category answered,
    assumptions written, paths named) are read from the description. Be strict: "send it back
-   when" in the page is the standard.
+   when" in the page is the standard. **You may never decide on your own that a criterion does
+   not apply.** `N/A` counts only when it is already written in the issue with its reason: a
+   criterion that is not addressed fails, even when the scope seems to make it irrelevant (for
+   example acceptance criteria with no edge or error case, and no `N/A` saying why).
 5. **If any criterion fails, do not move the issue.** Return the failed criteria, each with
    what is missing. Do not write a comment and do not edit the issue.
 6. **If everything passes, move it.** `executeRead` with `name: listJiraIssueTransitions`, pick
    the transition whose **target status** is `to` (never the transition name, never a guessed
    ID), then `transitionJiraIssue` with its ID. The result says the status the issue landed in.
-   **Moving to `In Review`:** before the check, if `pr_url` was given and is not already among
+   **Moving to `In Review` (never an Epic):** before the check, if `pr_url` was given and is not already among
    the issue's remote links (`listJiraIssueRemoteIssueLinks`), link it yourself with
    `executeWrite`, `name: createJiraIssueRemoteIssueLink`, `inputs: {issueIdOrKey, url: <pr_url>,
    title: "Pull request"}`. The caller does not have to link it separately. Without a `pr_url`

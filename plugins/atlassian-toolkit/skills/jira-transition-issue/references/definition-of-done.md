@@ -5,7 +5,6 @@
 ## How to use this page
 
 - The checklists are **layered**. A sub-task is Done when the universal checklist passes. A Story is Done when all its sub-tasks are Done and the Story checklist passes. Bugs and Epics add their own.
-- On top of that, the **component type** additions apply: library, application, infrastructure or boilerplate.
 - Every line is a yes/no check. Write `N/A` and a reason when one does not apply. Never skip silently.
 - Evidence beats assertion: link the pull request, the CI run, the test, the output. "Done" without a link is not Done.
 - The status moves to `Done` only after the pull request is merged into `main`.
@@ -100,18 +99,7 @@ On top of the universal checklist:
 - A short retrospective is written in the PRD page: what went well, what hurt, what to change in this process.
 - Feature flags created by the Epic are removed or have a dated removal item.
 
-## 5. Additions by component type
-
-The component's *Overview* page states its type. Add the rows for that type to the universal checklist. A component with no declared type has no additions.
-
-| Type | Also required |
-|---|---|
-| **Library** | Public API change is classified as major, minor or patch, and the commit type matches. Public types and exports are intentional: nothing internal leaks. Usage example or doc updated. A package build dry run succeeds, and known consumers still compile |
-| **Application** | Incomplete behaviour is behind a feature flag, default off. The artifact is built once and promoted unchanged through environments. Configuration is external: nothing is hardcoded per environment. Health checks and the logs or metrics that prove it works are in place. Migrations are backward compatible with the previous version, so rollback is safe. Rollback was considered and, for risky changes, rehearsed |
-| **Infrastructure** | The plan or diff was read and reviewed: nothing destroyed or replaced by surprise. Applied in a non-production environment first, when one exists. Idempotent: applying twice changes nothing the second time. Cost impact estimated, tags and ownership present. State and backups are safe, and destroy paths are understood |
-| **Boilerplate / projen** | A repository generated fresh from it builds and passes its own checks. An existing repository upgrades cleanly, and the synth diff is explained. The change and the upgrade path are documented for consumers |
-
-## 6. Special cases
+## 5. Special cases
 
 | Item | Done means |
 |---|---|
@@ -120,13 +108,13 @@ The component's *Overview* page states its type. Add the rows for that type to t
 | **Documentation** sub-task | Links are valid, examples were run, and the page is in the right place of the tree with its labels |
 | Hotfix | The universal checklist still applies. Only the process around it is faster. A regression test is never skipped |
 
-## 7. What Done does not include
+## 6. What Done does not include
 
 - It is not deployed to production. Deployment and release belong to GitHub.
 - It does not mean the feature flag is on. Turning a flag on is a release decision.
 - It does not mean perfect. Known limitations are written down and filed, not hidden.
 
-## 8. Never acceptable
+## 7. Never acceptable
 
 - Marking Done with CI red, or with a required check disabled.
 - Weakening or deleting a test to get green.

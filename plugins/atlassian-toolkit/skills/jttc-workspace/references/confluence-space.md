@@ -111,7 +111,7 @@ links, dates). Keep it current. The templates already contain it:
 | Consistency Analysis | PRD, Technical Plan, Date, Passes, Findings, Requirement coverage, Verdict |
 | ADR | Status, Date, Scope, Related |
 | Runbook | Component, Owner, Last verified, Risk, Estimated time, Needs approval, Trigger, Related |
-| Overview | Component, Type, Lifecycle, Repository, Jira, Owner, Stack, Release process, Published at |
+| Overview | Component, Lifecycle, Repository, Jira, Owner, Stack, Release process, Published at |
 
 The PRD, plan and analysis sections match what the `/prd`, `/plan` and `/analyze` skills
 produce (REQ-n, NFR-n, SC-n, OQ-n; modules table, phases; findings table, coverage, verdict).

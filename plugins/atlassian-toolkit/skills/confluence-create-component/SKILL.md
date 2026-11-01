@@ -31,7 +31,6 @@ PRDs, ADRs and runbooks are not part of it: they are created later with `conflue
 | Input | Required | Notes |
 |---|---|---|
 | `component` | yes | The name, exactly as the Jira Component |
-| `type` | yes | `Library`, `Application`, `Infrastructure` or `Boilerplate`. It decides which extra rows of the Definition of Done apply |
 | `lifecycle` | no | `Experimental` (default), `Active`, `Maintenance` or `Deprecated` |
 | `repository` | yes | The repository URL |
 | `owner` | yes | Who decides for this component |
@@ -52,8 +51,8 @@ PRDs, ADRs and runbooks are not part of it: they are created later with `conflue
      `cql: title in ("<c>", "<c> — Overview", "<c> — PRDs", "<c> — Decisions", "<c> — Design", "<c> — Runbooks") AND space = "JTTC"`.
      Any result means the component already exists: report it and create nothing. Titles are
      unique across the whole space, so the component name is a prefix of every page.
-1. **Validate before writing.** Every required input is present and not empty, `type` and
-   `lifecycle` have an allowed value, `repository` is an absolute `https` URL. If anything fails,
+1. **Validate before writing.** Every required input is present and not empty, `lifecycle`
+   has an allowed value, `repository` is an absolute `https` URL. If anything fails,
    write nothing and return the problems.
 2. **Create the component page** with `createConfluenceContent`: `cloudId`,
    `contentType: page`, `title: <component>`, `parent: {parentContentId: "261324818"}`,
@@ -62,7 +61,7 @@ PRDs, ADRs and runbooks are not part of it: they are created later with `conflue
 3. **Create the five children**, one call each, with `parent: {parentContentId: <component page
    ID>}` and the titles `<component> — Overview`, `— PRDs`, `— Decisions`, `— Design`,
    `— Runbooks`, each body built from its file. Build the Overview body from `overview.html`:
-   - `{{row:Component}}` the name; `{{row:Type}}` and `{{row:Lifecycle}}` the values;
+   - `{{row:Component}}` the name; `{{row:Lifecycle}}` the value;
    - `{{row:Repository}}` an inline smart link `<a href="URL" data-card-appearance="inline"></a>`;
    - `{{row:Jira}}` an inline smart link to
      `https://jumptothecloud.atlassian.net/issues/?jql=project%20%3D%20JTTC%20AND%20component%20%3D%20%22<component>%22`
