@@ -1,7 +1,7 @@
 {
   "name": "atlassian-toolkit",
   "description": "Atlassian Cloud integration for Claude Code: preconfigures the official remote Atlassian Rovo MCP server (Jira, Confluence) with OAuth, nothing to install, and auto-approves its read-only tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": {
     "name": "jumptothecloud",
     "email": "accounts@jumptothecloud.tech"
