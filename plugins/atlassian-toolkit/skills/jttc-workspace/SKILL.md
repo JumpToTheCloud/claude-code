@@ -9,9 +9,13 @@ Where everything lives in the Jump to the Cloud Atlassian workspace, and the rul
 apply to it. This skill is a **map**, not the source of truth: the Definition of Ready, the
 Definition of Done and the templates live in Confluence and are edited there.
 
-**Rule 1 — read the live page.** Before applying the Definition of Ready, the Definition of
-Done or a template, read the Confluence page (IDs in `references/confluence-space.md`). The
-summaries in this skill can be out of date; the page cannot.
+**Rule 1 — know which copy is the source.** The Definition of Ready, the Definition of Done and
+the issue-body templates are kept **in the plugin** (`jira-transition-issue/references/` and the
+`assets/` of each `jira-create-*` skill). The Confluence pages for them are generated mirrors for
+people to read: never edit them by hand and do not read them to apply a gate. The PRD,
+Technical Plan, Consistency Analysis, ADR and Runbook templates are in
+`confluence-create-doc/assets/`; only the Component Template tree still lives in Confluence and
+is copied by ID.
 
 **Rule 2 — IDs here are stable, but verify when something fails.** A 404 or "not found"
 means an ID changed: look it up again, do not guess.
@@ -25,7 +29,7 @@ Cloud ID: `41be3e35-e509-4a4c-93e1-5460248e11ab`
 |---|---|
 | Creating, editing, searching or transitioning Jira issues in JTTC; statuses, issue types, custom fields, boards, components | `references/jira-project.md` |
 | Creating or finding a Confluence page: PRD, plan, analysis, ADR, runbook, component page; naming; labels; templates | `references/confluence-space.md` |
-| Whether an item is ready to start or done: the two gates, per-type shortcuts, Done checklists | `references/quality-gates.md` |
+| Whether an item is ready to start or done: the two gates, per-type shortcuts, Done checklists | `references/quality-gates.md`, which points to the criteria kept in `jira-transition-issue` |
 
 Most tasks need two of them. Creating a PRD, for example, needs `confluence-space.md` for the
 template and the naming, and `jira-project.md` if Epics or Stories are created from it.
@@ -69,6 +73,30 @@ template and the naming, and `jira-project.md` if Epics or Stories are created f
    the old CDKX workflow** (`To Do`, `Ready for Implementation`, `Análisis`). Do not apply
    their hardcoded status names to JTTC; use the statuses in `jira-project.md`.
 
+9. **Nothing in the plugin can delete a Jira issue.** The MCP has no delete operation and the
+   `atlassian-operator` agent has no destructive tools. Remove test data with
+   `acli jira workitem delete --key JTTC-n --yes` (explicit keys only, never a JQL), after the
+   user says so.
+
+10. **The MCP does not return `timetracking`.** `getJiraIssue` omits the estimate even when it is
+    stored. To verify it use the REST API (`GET /rest/api/3/issue/<key>?fields=timetracking`)
+    or the Jira UI. A create call that accepts `timetracking` without an error means it was
+    saved, provided `timetracking` is on `JTTC Default Screen` (`jira_template.py apply` adds
+    it).
+11. **Remote links are not in `getJiraIssue` either.** List them with `executeRead` and the
+    operation `listJiraIssueRemoteIssueLinks`.
+
+12. **`editJiraIssue` has no `description` argument.** Pass the description inside
+    `fields: {"description": ...}`. A top-level `description` is dropped silently and the call
+    still reports success, so always read the issue back.
+13. **`getConfluenceContent` does not return labels.** To check a label use `searchConfluence`
+    with `cql: id = <pageId> AND label = "<label>"`.
+
+14. **Story Points live on Story, Task and Bug only** (fixed 2026-11-01 in the Jira UI; before
+    that only Story had it). They are deliberately not on the sub-tasks (estimated in hours with
+    `timetracking`) nor on the Epic (its size is the sum of its children). Verify with
+    `GET /rest/api/3/issue/createmeta/JTTC/issuetypes/<typeId>` and look for `customfield_10041`.
+
 ## Creating things — quick recipes
 
 **A Jira issue.** Required at creation: project, issue type, summary, **components**; a
@@ -77,7 +105,7 @@ and Mode on sub-tasks. Field IDs and allowed values are in `jira-project.md`. Lo
 IDs up at runtime; do not hardcode them.
 
 **A Confluence page.** Copy the matching template under the right parent, rename it with the
-title pattern, add the type label and a lifecycle label. Details in `confluence-space.md`.
+title pattern, add the type label (the state is a status lozenge in its summary table, not a label). Details in `confluence-space.md`.
 
 **A component.** Create the Jira Component first, then copy the `Component Template` tree
 under `Components`, replacing `Component Template` with the component name in the titles.
