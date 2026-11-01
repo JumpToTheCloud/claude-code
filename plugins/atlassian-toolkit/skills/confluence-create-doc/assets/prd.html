@@ -1,0 +1,43 @@
+<!--
+PRD template. Source of truth for the page created by confluence-create-doc.
+Confluence mirrors it under Templates; never edit the mirror.
+Markers: {{row:<label>}} is replaced by the summary row value (the Status row by the
+status lozenge), {{section:<heading>}} by the section content converted to HTML. An optional
+section that was not given is removed with its heading. Required: Problem Statement, Solution, User Stories, Functional Requirements, Success Criteria, Out of Scope. Requirement lists (REQ-n, NFR-n, SC-n) are task lists.
+-->
+<table><tbody>
+<tr><th><p>Status</p></th><td><p>{{row:Status}}</p></td></tr>
+<tr><th><p>Component</p></th><td><p>{{row:Component}}</p></td></tr>
+<tr><th><p>Audience</p></th><td><p>{{row:Audience}}</p></td></tr>
+<tr><th><p>Priority</p></th><td><p>{{row:Priority}}</p></td></tr>
+<tr><th><p>Deadline</p></th><td><p>{{row:Deadline}}</p></td></tr>
+<tr><th><p>Jira Epic(s)</p></th><td><p>{{row:Jira Epic(s)}}</p></td></tr>
+<tr><th><p>Technical Plan</p></th><td><p>{{row:Technical Plan}}</p></td></tr>
+<tr><th><p>Consistency Analysis</p></th><td><p>{{row:Consistency Analysis}}</p></td></tr>
+<tr><th><p>Related ADRs</p></th><td><p>{{row:Related ADRs}}</p></td></tr>
+<tr><th><p>Last updated</p></th><td><p>{{row:Last updated}}</p></td></tr>
+</tbody></table>
+<h2>Problem Statement</h2>
+{{section:Problem Statement}}
+<h2>Solution</h2>
+{{section:Solution}}
+<h2>User Stories</h2>
+{{section:User Stories}}
+<h2>Functional Requirements</h2>
+{{section:Functional Requirements}}
+<h2>Non-Functional Requirements</h2>
+{{section:Non-Functional Requirements}}
+<h2>Success Criteria</h2>
+{{section:Success Criteria}}
+<h2>Open Questions</h2>
+{{section:Open Questions}}
+<h2>Key Entities</h2>
+{{section:Key Entities}}
+<h2>Assumptions</h2>
+{{section:Assumptions}}
+<h2>Edge Cases</h2>
+{{section:Edge Cases}}
+<h2>Out of Scope</h2>
+{{section:Out of Scope}}
+<h2>Related Work</h2>
+{{section:Related Work}}

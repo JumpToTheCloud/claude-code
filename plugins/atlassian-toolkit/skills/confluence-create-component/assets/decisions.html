@@ -1,0 +1,14 @@
+<!--
+Decisions page. Source of truth for the page created by confluence-create-component.
+Confluence mirrors the component tree under Templates; never edit the mirror.
+Markers: {{component}} is the component name.
+-->
+<div data-type="panel-info"><p><strong>ADRs that affect only this component.</strong> A decision that affects several components goes in <em>Platform → Decisions</em>.</p></div>
+<h2>Rules</h2>
+<ul>
+<li><p>Title: <code>ADR-NNNN: short imperative title</code>. Numbering is per component, consecutive, starting at 0001, and numbers are never reused.</p></li>
+<li><p>Create ADRs with the <code>confluence-create-doc</code> skill. The state is the status lozenge of the summary table: PROPOSED, ACCEPTED or SUPERSEDED.</p></li>
+<li><p>Never rewrite history: supersede with a new ADR, set the old one to SUPERSEDED and link both ways.</p></li>
+</ul>
+<h2>Decisions</h2>
+<div data-type="extension" data-extension-key="children" data-extension-type="com.atlassian.confluence.macro.core" data-parameters='{"macroParams":{"depth":{"value":"1"}},"macroMetadata":{"schemaVersion":{"value":"2"},"title":"Child pages"}}'></div>

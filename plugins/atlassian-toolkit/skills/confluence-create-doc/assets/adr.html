@@ -1,0 +1,21 @@
+<!--
+ADR template. Source of truth for the page created by confluence-create-doc.
+Confluence mirrors it under Templates; never edit the mirror.
+Markers: {{row:<label>}} is replaced by the summary row value (the Status row by the
+status lozenge), {{section:<heading>}} by the section content converted to HTML. An optional
+section that was not given is removed with its heading. Required: all four. Consequences holds three sub-headings written by the caller (### Positive, ### Negative and risks, ### Follow-ups).
+-->
+<table><tbody>
+<tr><th><p>Status</p></th><td><p>{{row:Status}}</p></td></tr>
+<tr><th><p>Date</p></th><td><p>{{row:Date}}</p></td></tr>
+<tr><th><p>Scope</p></th><td><p>{{row:Scope}}</p></td></tr>
+<tr><th><p>Related</p></th><td><p>{{row:Related}}</p></td></tr>
+</tbody></table>
+<h2>Context</h2>
+{{section:Context}}
+<h2>Decision</h2>
+{{section:Decision}}
+<h2>Alternatives considered</h2>
+{{section:Alternatives considered}}
+<h2>Consequences</h2>
+{{section:Consequences}}
